@@ -86,7 +86,19 @@ const leagueAvgByPos = POSITIONS.reduce((acc, pos) => {
 
 const standings = [...TEAMS].sort((a, b) => (b.record[0] - a.record[0]) || (b.pf - a.pf));
 
-// Optimal lineup (actual + bench points left on the table), ranked worst-managed first.
+// Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
+// rank among bench-points-left rather than the raw value, so the colors
+// spread evenly across the full field regardless of how the values cluster.
+function benchGradientColor(t) {
+  const GREEN = [79, 209, 160]; // #4FD1A0
+  const YELLOW = [245, 215, 110]; // #F5D76E
+  const RED = [247, 108, 108]; // #F76C6C
+  const [c1, c2, localT] = t <= 0.5 ? [GREEN, YELLOW, t / 0.5] : [YELLOW, RED, (t - 0.5) / 0.5];
+  const [r, g, b] = c1.map((c, i) => Math.round(c + (c2[i] - c) * localT));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Optimal lineup (actual + bench points left on the table), ranked best-managed first.
 const benchData = [...TEAMS]
   .map((t) => ({
     name: t.name,
@@ -94,7 +106,8 @@ const benchData = [...TEAMS]
     optimal: Number((t.pf + t.benchPtsLeft).toFixed(1)),
     left: t.benchPtsLeft,
   }))
-  .sort((a, b) => b.left - a.left);
+  .sort((a, b) => a.left - b.left)
+  .map((t, i, arr) => ({ ...t, color: benchGradientColor(i / (arr.length - 1)) }));
 
 const teamName = (id) => TEAMS.find((t) => t.id === id)?.name ?? "Unknown";
 
@@ -368,7 +381,11 @@ export default function LeagueDashboard() {
                   itemStyle={{ color: "#e2e8f0" }}
                   formatter={(v, _n, p) => [`${v} pts (actual ${p.payload.actual} / optimal ${p.payload.optimal})`, "Left on bench"]}
                 />
-                <Bar dataKey="left" radius={[0, 4, 4, 0]} fill="#F76C6C" />
+                <Bar dataKey="left" radius={[0, 4, 4, 0]}>
+                  {benchData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
             <p className="text-[11px] text-slate-500 mt-2">
