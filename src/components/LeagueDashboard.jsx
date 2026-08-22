@@ -93,30 +93,56 @@ const teamName = (id) => TEAMS.find((t) => t.id === id)?.name ?? "Unknown";
 const TRADES = [
   {
     id: 1, week: 11, date: "Nov 18",
-    teamA: 1, sendA: ["R. Rice (WR)"], receiveA: ["D. Achane (RB)", "2026 3rd"],
-    teamB: 2, sendB: ["D. Achane (RB)", "2026 3rd"], receiveB: ["R. Rice (WR)"],
+    teamA: 1, sendA: ["R. Rice (WR)"], receiveA: ["D. Achane (RB)", "2026 3rd"], gradeA: "B+",
+    teamB: 2, sendB: ["D. Achane (RB)", "2026 3rd"], receiveB: ["R. Rice (WR)"], gradeB: "C-",
   },
   {
     id: 2, week: 10, date: "Nov 11",
-    teamA: 4, sendA: ["D. Kincaid (TE)"], receiveA: ["T. Kraft (TE)", "K. Williams (RB)"],
-    teamB: 5, sendB: ["T. Kraft (TE)", "K. Williams (RB)"], receiveB: ["D. Kincaid (TE)"],
+    teamA: 4, sendA: ["D. Kincaid (TE)"], receiveA: ["T. Kraft (TE)", "K. Williams (RB)"], gradeA: "A-",
+    teamB: 5, sendB: ["T. Kraft (TE)", "K. Williams (RB)"], receiveB: ["D. Kincaid (TE)"], gradeB: "D+",
   },
   {
     id: 3, week: 9, date: "Nov 4",
-    teamA: 3, sendA: ["S. Barkley (RB)", "2026 5th"], receiveA: ["D. Henry (RB)"],
-    teamB: 5, sendB: ["D. Henry (RB)"], receiveB: ["S. Barkley (RB)", "2026 5th"],
+    teamA: 3, sendA: ["S. Barkley (RB)", "2026 5th"], receiveA: ["D. Henry (RB)"], gradeA: "B",
+    teamB: 5, sendB: ["D. Henry (RB)"], receiveB: ["S. Barkley (RB)", "2026 5th"], gradeB: "B-",
   },
   {
     id: 4, week: 7, date: "Oct 21",
-    teamA: 9, sendA: ["J. Love (QB)"], receiveA: ["D. Doubs (WR)", "R. Odunze (WR)"],
-    teamB: 6, sendB: ["D. Doubs (WR)", "R. Odunze (WR)"], receiveB: ["J. Love (QB)"],
+    teamA: 9, sendA: ["J. Love (QB)"], receiveA: ["D. Doubs (WR)", "R. Odunze (WR)"], gradeA: "A",
+    teamB: 6, sendB: ["D. Doubs (WR)", "R. Odunze (WR)"], receiveB: ["J. Love (QB)"], gradeB: "D",
   },
   {
     id: 5, week: 5, date: "Oct 7",
-    teamA: 8, sendA: ["A. Jones (RB)"], receiveA: ["Q. Judkins (RB)", "2027 4th"],
-    teamB: 4, sendB: ["Q. Judkins (RB)", "2027 4th"], receiveB: ["A. Jones (RB)"],
+    teamA: 8, sendA: ["A. Jones (RB)"], receiveA: ["Q. Judkins (RB)", "2027 4th"], gradeA: "A+",
+    teamB: 4, sendB: ["Q. Judkins (RB)", "2027 4th"], receiveB: ["A. Jones (RB)"], gradeB: "D-",
   },
 ];
+
+// Colors ordered worst (D-) to best (A+) so grades read at a glance.
+const GRADE_STYLES = {
+  "A+": "bg-emerald-400/15 text-emerald-300 border-emerald-400/50",
+  "A": "bg-emerald-400/15 text-emerald-300 border-emerald-400/50",
+  "A-": "bg-emerald-400/15 text-emerald-300 border-emerald-400/50",
+  "B+": "bg-sky-400/15 text-sky-300 border-sky-400/50",
+  "B": "bg-sky-400/15 text-sky-300 border-sky-400/50",
+  "B-": "bg-sky-400/15 text-sky-300 border-sky-400/50",
+  "C+": "bg-amber-400/15 text-amber-300 border-amber-400/50",
+  "C": "bg-amber-400/15 text-amber-300 border-amber-400/50",
+  "C-": "bg-amber-400/15 text-amber-300 border-amber-400/50",
+  "D+": "bg-rose-400/15 text-rose-300 border-rose-400/50",
+  "D": "bg-rose-400/15 text-rose-300 border-rose-400/50",
+  "D-": "bg-rose-400/15 text-rose-300 border-rose-400/50",
+};
+
+function GradeBadge({ grade }) {
+  return (
+    <span
+      className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md border text-[11px] font-black tracking-wide ${GRADE_STYLES[grade] ?? "bg-slate-700/40 text-slate-300 border-slate-600"}`}
+    >
+      {grade}
+    </span>
+  );
+}
 
 function Card({ children, className = "" }) {
   return (
@@ -330,7 +356,10 @@ export default function LeagueDashboard() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs font-semibold text-slate-200 mb-1">{teamName(tr.teamA)}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-slate-200">{teamName(tr.teamA)}</span>
+                        <GradeBadge grade={tr.gradeA} />
+                      </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
                         + {tr.receiveA.join(", ")}
                       </div>
@@ -339,7 +368,10 @@ export default function LeagueDashboard() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-200 mb-1">{teamName(tr.teamB)}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-slate-200">{teamName(tr.teamB)}</span>
+                        <GradeBadge grade={tr.gradeB} />
+                      </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
                         + {tr.receiveB.join(", ")}
                       </div>
