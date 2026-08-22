@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Cell, ReferenceLine, PieChart, Pie, Legend
+  Cell, ReferenceLine, PieChart, Pie, Legend, LabelList
 } from "recharts";
 import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
@@ -328,7 +328,7 @@ export default function LeagueDashboard({
               <Card className="p-5">
                 <SectionLabel eyebrow="Season Total" title="Points by Position" />
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={scoringData} layout="vertical" margin={{ left: 8, right: 16 }}>
+                  <BarChart data={scoringData} layout="vertical" margin={{ left: 8, right: 36 }}>
                     <CartesianGrid stroke="#1e293b" horizontal={false} />
                     <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={{ stroke: "#334155" }} />
                     <YAxis dataKey="pos" type="category" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={{ stroke: "#334155" }} width={40} />
@@ -337,10 +337,11 @@ export default function LeagueDashboard({
                       itemStyle={{ color: "#e2e8f0" }}
                       formatter={(v) => [`${v} pts`, "Season"]}
                     />
-                    <Bar dataKey="points" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="points" radius={[0, 4, 4, 0]} isAnimationActive={false}>
                       {scoringData.map((entry) => (
                         <Cell key={entry.pos} fill={POS_COLOR[entry.pos]} />
                       ))}
+                      <LabelList dataKey="points" position="right" fill="#94a3b8" fontSize={11} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
