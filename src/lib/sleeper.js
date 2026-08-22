@@ -134,6 +134,8 @@ export async function getLeagueData() {
       const playersToB = Object.entries(t.adds || {}).filter(([, r]) => r === rB).map(([pid]) => playerLabel(players, pid));
       const picksToA = (t.draft_picks || []).filter((p) => p.owner_id === rA).map(pickLabel);
       const picksToB = (t.draft_picks || []).filter((p) => p.owner_id === rB).map(pickLabel);
+      const faabToA = (t.waiver_budget || []).filter((f) => f.receiver === rA).map((f) => `$${f.amount} FAAB`);
+      const faabToB = (t.waiver_budget || []).filter((f) => f.receiver === rB).map((f) => `$${f.amount} FAAB`);
       const { gradeA, gradeB } = getTradeGrades(t.transaction_id);
 
       trades.push({
@@ -141,12 +143,12 @@ export async function getLeagueData() {
         week: w,
         date: new Date(t.created).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         teamA: rA,
-        receiveA: [...playersToA, ...picksToA],
-        sendA: [...playersToB, ...picksToB],
+        receiveA: [...playersToA, ...picksToA, ...faabToA],
+        sendA: [...playersToB, ...picksToB, ...faabToB],
         gradeA,
         teamB: rB,
-        receiveB: [...playersToB, ...picksToB],
-        sendB: [...playersToA, ...picksToA],
+        receiveB: [...playersToB, ...picksToB, ...faabToB],
+        sendB: [...playersToA, ...picksToA, ...faabToA],
         gradeB,
       });
     }
