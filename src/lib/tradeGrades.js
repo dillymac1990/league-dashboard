@@ -31,6 +31,9 @@ const TRADE_GRADES = {
   "1298128727510630400": { gradeA: "B", gradeB: "B-" },
 };
 
+// Default for trades not yet added above (e.g. new ones this season).
+const DEFAULT_GRADE = { gradeA: "B+", gradeB: "B+" };
+
 export function getTradeGrades(transactionId) {
-  return TRADE_GRADES[transactionId] ?? { gradeA: null, gradeB: null };
+  return TRADE_GRADES[transactionId] ?? DEFAULT_GRADE;
 }
