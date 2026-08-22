@@ -142,7 +142,8 @@ export default function LeagueDashboard({
           wins: t.record[0],
           expected: t.expectedWins,
         }))
-        .sort((a, b) => b.luck - a.luck),
+        .sort((a, b) => b.luck - a.luck)
+        .map((t, i, arr) => ({ ...t, color: benchGradientColor(arr.length > 1 ? i / (arr.length - 1) : 0) })),
     [teams]
   );
 
@@ -428,9 +429,9 @@ export default function LeagueDashboard({
                   itemStyle={{ color: "#e2e8f0" }}
                   formatter={(v, _n, p) => [`${v > 0 ? "+" : ""}${v} (${p.payload.wins} actual wins vs. ${p.payload.expected} expected)`, "Luck"]}
                 />
-                <Bar dataKey="luck" radius={[4, 4, 4, 4]}>
+                <Bar dataKey="luck" radius={[4, 4, 4, 4]} isAnimationActive={false}>
                   {luckData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.luck >= 0 ? "#4FD1A0" : "#F76C6C"} />
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
