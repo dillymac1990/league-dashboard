@@ -20,7 +20,7 @@ function rosterToPlayerList(team, playerValues) {
     .sort((a, b) => (b.value ?? -1) - (a.value ?? -1));
 }
 
-function verdictFor(totalA, totalB) {
+function verdictFor(totalA, totalB, nameA, nameB) {
   if (totalA === 0 && totalB === 0) {
     return { label: "Add players to both sides to analyze", style: "bg-slate-700/30 text-slate-400 border-slate-600" };
   }
@@ -33,7 +33,7 @@ function verdictFor(totalA, totalB) {
   }
   // Each side's total is the value that team is SENDING away, so the side
   // giving up less relative value is the one coming out ahead.
-  const winner = diff > 0 ? "Side B" : "Side A";
+  const winner = diff > 0 ? nameB || "Side B" : nameA || "Side A";
   if (diffPct <= 15) {
     return { label: `Slight Edge: ${winner}`, style: "bg-amber-400/15 text-amber-300 border-amber-400/50" };
   }
@@ -124,7 +124,7 @@ export default function TradeAnalyzer({ teams, playerValues }) {
 
   const totalA = sideA.reduce((s, p) => s + (p.value ?? 0), 0);
   const totalB = sideB.reduce((s, p) => s + (p.value ?? 0), 0);
-  const verdict = verdictFor(totalA, totalB);
+  const verdict = verdictFor(totalA, totalB, teamA?.name, teamB?.name);
 
   const handleTeamAChange = (id) => {
     setTeamAId(id);
