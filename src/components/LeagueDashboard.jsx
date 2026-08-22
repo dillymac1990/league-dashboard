@@ -334,7 +334,7 @@ export default function LeagueDashboard({
         {/* Trade Analyzer */}
         <div className="mt-6">
           <Card className="p-5">
-            <TradeAnalyzer />
+            <TradeAnalyzer teams={teams} />
           </Card>
         </div>
 

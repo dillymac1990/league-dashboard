@@ -7,6 +7,9 @@ import { Scale, X, RotateCcw } from "lucide-react";
 // MOCK PPR TRADE VALUES — swap for a real dynasty/redraft value chart later.
 // Scale is roughly 0-99, mirroring how most fantasy trade calculators
 // present value (think "trade value chart" tiers, not raw projected points).
+// Matched against real roster players by last name (see valueForName below),
+// since Sleeper gives full names ("Justin Jefferson") rather than the
+// abbreviated first-initial style used here.
 // ---------------------------------------------------------------------------
 const PLAYER_VALUES = [
   { name: "J. Jefferson", pos: "WR", value: 98 },
@@ -92,7 +95,71 @@ const PLAYER_VALUES = [
   { name: "K. Concepcion", pos: "WR", value: 37 },
   { name: "K. Monangai", pos: "RB", value: 36 },
   { name: "J. Mason", pos: "RB", value: 35 },
+  // Defenses (matched by full team name, as Sleeper returns them)
+  { name: "Buffalo Bills", pos: "DEF", value: 42 },
+  { name: "Denver Broncos", pos: "DEF", value: 41 },
+  { name: "Philadelphia Eagles", pos: "DEF", value: 40 },
+  { name: "Pittsburgh Steelers", pos: "DEF", value: 39 },
+  { name: "Houston Texans", pos: "DEF", value: 38 },
+  { name: "Baltimore Ravens", pos: "DEF", value: 37 },
+  { name: "Minnesota Vikings", pos: "DEF", value: 37 },
+  { name: "Kansas City Chiefs", pos: "DEF", value: 36 },
+  { name: "Green Bay Packers", pos: "DEF", value: 36 },
+  { name: "Detroit Lions", pos: "DEF", value: 35 },
+  { name: "Los Angeles Chargers", pos: "DEF", value: 35 },
+  { name: "San Francisco 49ers", pos: "DEF", value: 34 },
+  { name: "New York Jets", pos: "DEF", value: 34 },
+  { name: "Seattle Seahawks", pos: "DEF", value: 33 },
+  { name: "Los Angeles Rams", pos: "DEF", value: 33 },
+  { name: "Cleveland Browns", pos: "DEF", value: 32 },
+  { name: "Tampa Bay Buccaneers", pos: "DEF", value: 32 },
+  { name: "Dallas Cowboys", pos: "DEF", value: 31 },
+  { name: "Arizona Cardinals", pos: "DEF", value: 31 },
+  { name: "Miami Dolphins", pos: "DEF", value: 30 },
+  { name: "Indianapolis Colts", pos: "DEF", value: 30 },
+  { name: "Chicago Bears", pos: "DEF", value: 29 },
+  { name: "Cincinnati Bengals", pos: "DEF", value: 29 },
+  { name: "Atlanta Falcons", pos: "DEF", value: 28 },
+  { name: "Washington Commanders", pos: "DEF", value: 28 },
+  { name: "New England Patriots", pos: "DEF", value: 28 },
+  { name: "Las Vegas Raiders", pos: "DEF", value: 27 },
+  { name: "New Orleans Saints", pos: "DEF", value: 27 },
+  { name: "Jacksonville Jaguars", pos: "DEF", value: 26 },
+  { name: "Carolina Panthers", pos: "DEF", value: 26 },
+  { name: "New York Giants", pos: "DEF", value: 25 },
+  { name: "Tennessee Titans", pos: "DEF", value: 25 },
 ].sort((a, b) => b.value - a.value);
+
+function lastNameKey(fullName) {
+  const parts = fullName.replace(/[.']/g, "").trim().split(/\s+/);
+  return parts[parts.length - 1].toLowerCase();
+}
+
+const VALUE_BY_NAME = new Map(PLAYER_VALUES.map((p) => [p.name, p.value]));
+// Keyed by "lastname|pos" — last name alone collides too easily (e.g. Derrick
+// Henry, RB vs. Hunter Henry, TE both being "henry") and would silently hand
+// a roster player the wrong player's value.
+const VALUE_BY_LASTNAME_POS = new Map();
+for (const p of PLAYER_VALUES) {
+  const key = `${lastNameKey(p.name)}|${p.pos}`;
+  if (!VALUE_BY_LASTNAME_POS.has(key)) VALUE_BY_LASTNAME_POS.set(key, p.value);
+}
+
+// Full roster names ("Justin Jefferson") don't match the abbreviated chart
+// ("J. Jefferson") exactly, so fall back to a last-name+position match (never
+// last name alone — that can match a different player at another position).
+// Returns null (shown as "unranked") if the player isn't in the mock chart.
+function valueForName(name, pos) {
+  if (VALUE_BY_NAME.has(name)) return VALUE_BY_NAME.get(name);
+  return VALUE_BY_LASTNAME_POS.get(`${lastNameKey(name)}|${pos}`) ?? null;
+}
+
+function rosterToPlayerList(team) {
+  if (!team) return [];
+  return Object.entries(team.roster)
+    .flatMap(([pos, names]) => names.map((name) => ({ name, pos, value: valueForName(name, pos) })))
+    .sort((a, b) => (b.value ?? -1) - (a.value ?? -1));
+}
 
 function verdictFor(totalA, totalB) {
   if (totalA === 0 && totalB === 0) {
@@ -112,8 +179,8 @@ function verdictFor(totalA, totalB) {
   return { label: `Lopsided — ${winner} Wins Big`, style: "bg-rose-400/15 text-rose-300 border-rose-400/50" };
 }
 
-function TradeSide({ label, players, onAdd, onRemove, options }) {
-  const total = players.reduce((s, p) => s + p.value, 0);
+function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemove, options }) {
+  const total = players.reduce((s, p) => s + (p.value ?? 0), 0);
 
   return (
     <div className="rounded-md border border-slate-700/50 bg-slate-900/40 p-3 flex-1 min-w-0">
@@ -123,14 +190,28 @@ function TradeSide({ label, players, onAdd, onRemove, options }) {
       </div>
 
       <select
-        value=""
-        onChange={(e) => e.target.value && onAdd(e.target.value)}
+        value={teamId ?? ""}
+        onChange={(e) => onTeamChange(e.target.value ? Number(e.target.value) : null)}
         className="w-full bg-slate-800 border border-slate-700 rounded-md text-[11px] text-slate-300 px-2 py-1.5 mb-2"
       >
-        <option value="">+ Add player…</option>
+        <option value="">Select team…</option>
+        {teams.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value=""
+        disabled={!teamId}
+        onChange={(e) => e.target.value && onAdd(e.target.value)}
+        className="w-full bg-slate-800 border border-slate-700 rounded-md text-[11px] text-slate-300 px-2 py-1.5 mb-2 disabled:opacity-40"
+      >
+        <option value="">{teamId ? "+ Add player…" : "Select a team first"}</option>
         {options.map((p) => (
           <option key={p.name} value={p.name}>
-            {p.name} ({p.pos}) — {p.value}
+            {p.name} ({p.pos}) — {p.value ?? "unranked"}
           </option>
         ))}
       </select>
@@ -145,7 +226,7 @@ function TradeSide({ label, players, onAdd, onRemove, options }) {
               {p.name} <span className="text-slate-500">({p.pos})</span>
             </span>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="font-mono text-slate-400">{p.value}</span>
+              <span className="font-mono text-slate-400">{p.value ?? "—"}</span>
               <button
                 onClick={() => onRemove(p.name)}
                 className="text-slate-500 hover:text-rose-400 transition-colors"
@@ -161,22 +242,39 @@ function TradeSide({ label, players, onAdd, onRemove, options }) {
   );
 }
 
-export default function TradeAnalyzer() {
+export default function TradeAnalyzer({ teams }) {
+  const [teamAId, setTeamAId] = useState(null);
+  const [teamBId, setTeamBId] = useState(null);
   const [sideANames, setSideANames] = useState([]);
   const [sideBNames, setSideBNames] = useState([]);
 
-  const byName = useMemo(() => new Map(PLAYER_VALUES.map((p) => [p.name, p])), []);
-  const sideA = sideANames.map((n) => byName.get(n));
-  const sideB = sideBNames.map((n) => byName.get(n));
+  const teamA = teams.find((t) => t.id === teamAId);
+  const teamB = teams.find((t) => t.id === teamBId);
 
-  const takenNames = new Set([...sideANames, ...sideBNames]);
-  const optionsFor = (excludeSet) => PLAYER_VALUES.filter((p) => !excludeSet.has(p.name));
+  const rosterA = useMemo(() => rosterToPlayerList(teamA), [teamA]);
+  const rosterB = useMemo(() => rosterToPlayerList(teamB), [teamB]);
 
-  const totalA = sideA.reduce((s, p) => s + p.value, 0);
-  const totalB = sideB.reduce((s, p) => s + p.value, 0);
+  const byNameA = new Map(rosterA.map((p) => [p.name, p]));
+  const byNameB = new Map(rosterB.map((p) => [p.name, p]));
+  const sideA = sideANames.map((n) => byNameA.get(n)).filter(Boolean);
+  const sideB = sideBNames.map((n) => byNameB.get(n)).filter(Boolean);
+
+  const totalA = sideA.reduce((s, p) => s + (p.value ?? 0), 0);
+  const totalB = sideB.reduce((s, p) => s + (p.value ?? 0), 0);
   const verdict = verdictFor(totalA, totalB);
 
+  const handleTeamAChange = (id) => {
+    setTeamAId(id);
+    setSideANames([]);
+  };
+  const handleTeamBChange = (id) => {
+    setTeamBId(id);
+    setSideBNames([]);
+  };
+
   const reset = () => {
+    setTeamAId(null);
+    setTeamBId(null);
     setSideANames([]);
     setSideBNames([]);
   };
@@ -201,15 +299,21 @@ export default function TradeAnalyzer() {
       <div className="flex flex-col sm:flex-row gap-3">
         <TradeSide
           label="Side A"
+          teams={teams}
+          teamId={teamAId}
+          onTeamChange={handleTeamAChange}
           players={sideA}
-          options={optionsFor(takenNames)}
+          options={rosterA.filter((p) => !sideANames.includes(p.name))}
           onAdd={(name) => setSideANames((s) => [...s, name])}
           onRemove={(name) => setSideANames((s) => s.filter((n) => n !== name))}
         />
         <TradeSide
           label="Side B"
+          teams={teams}
+          teamId={teamBId}
+          onTeamChange={handleTeamBChange}
           players={sideB}
-          options={optionsFor(takenNames)}
+          options={rosterB.filter((p) => !sideBNames.includes(p.name))}
           onAdd={(name) => setSideBNames((s) => [...s, name])}
           onRemove={(name) => setSideBNames((s) => s.filter((n) => n !== name))}
         />
@@ -225,7 +329,7 @@ export default function TradeAnalyzer() {
       </div>
 
       <p className="text-[11px] text-slate-500 mt-2">
-        Values are a mock PPR trade chart (0–99 scale) for prototyping — swap in real rankings later.
+        Values are a mock PPR trade chart (0–99 scale) for prototyping — swap in real rankings later. Players not in the chart show as &quot;unranked&quot; and count as 0.
       </p>
     </div>
   );
