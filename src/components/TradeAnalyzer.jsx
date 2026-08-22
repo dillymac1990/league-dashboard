@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Scale, X, RotateCcw } from "lucide-react";
+import { Scale, X, RotateCcw, Send } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // MOCK PPR TRADE VALUES — swap for a real dynasty/redraft value chart later.
@@ -247,6 +247,7 @@ export default function TradeAnalyzer({ teams }) {
   const [teamBId, setTeamBId] = useState(null);
   const [sideANames, setSideANames] = useState([]);
   const [sideBNames, setSideBNames] = useState([]);
+  const [postState, setPostState] = useState("idle"); // idle | posting | success | error
 
   const teamA = teams.find((t) => t.id === teamAId);
   const teamB = teams.find((t) => t.id === teamBId);
@@ -277,7 +278,32 @@ export default function TradeAnalyzer({ teams }) {
     setTeamBId(null);
     setSideANames([]);
     setSideBNames([]);
+    setPostState("idle");
   };
+
+  const postToDiscord = async () => {
+    setPostState("posting");
+    try {
+      const res = await fetch("/api/post-trade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamAName: teamA?.name,
+          teamBName: teamB?.name,
+          sideA,
+          sideB,
+          verdictLabel: verdict.label,
+          totalA,
+          totalB,
+        }),
+      });
+      setPostState(res.ok ? "success" : "error");
+    } catch {
+      setPostState("error");
+    }
+  };
+
+  const canPost = teamA && teamB && (sideA.length > 0 || sideB.length > 0);
 
   return (
     <div>
@@ -326,6 +352,18 @@ export default function TradeAnalyzer({ teams }) {
             ({totalA} vs {totalB})
           </span>
         )}
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          onClick={postToDiscord}
+          disabled={!canPost || postState === "posting"}
+          className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-900 bg-amber-400 hover:bg-amber-300 disabled:bg-slate-700 disabled:text-slate-500 rounded-md px-3 py-1.5 transition-colors"
+        >
+          <Send size={12} /> {postState === "posting" ? "Posting…" : "Post to Discord"}
+        </button>
+        {postState === "success" && <span className="text-[11px] text-emerald-400">Posted!</span>}
+        {postState === "error" && <span className="text-[11px] text-rose-400">Failed to post — try again.</span>}
       </div>
 
       <p className="text-[11px] text-slate-500 mt-2">
