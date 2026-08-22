@@ -312,19 +312,19 @@ export default function LeagueDashboard({
         </div>
 
         {/* Bench points left on the table */}
-        <div className="mt-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="p-5">
             <SectionLabel eyebrow="Lineup Efficiency" title="Points Left on the Bench" />
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={benchData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={benchData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
                 <CartesianGrid stroke="#1e293b" horizontal={false} />
-                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={{ stroke: "#334155" }} unit=" pts" />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={{ stroke: "#334155" }} unit=" pts" />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  tick={{ fill: "#94a3b8", fontSize: 10 }}
                   axisLine={{ stroke: "#334155" }}
-                  width={140}
+                  width={110}
                 />
                 <Tooltip
                   contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, fontSize: 12 }}
@@ -342,22 +342,19 @@ export default function LeagueDashboard({
               Season-to-date points each team's optimal lineup would have scored, minus what they actually started.
             </p>
           </Card>
-        </div>
 
-        {/* Luck index */}
-        <div className="mt-6">
           <Card className="p-5">
             <SectionLabel eyebrow="Schedule Luck" title="Luck Index" />
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={luckData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={luckData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
                 <CartesianGrid stroke="#1e293b" horizontal={false} />
-                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={{ stroke: "#334155" }} />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={{ stroke: "#334155" }} />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  tick={{ fill: "#94a3b8", fontSize: 10 }}
                   axisLine={{ stroke: "#334155" }}
-                  width={140}
+                  width={110}
                 />
                 <ReferenceLine x={0} stroke="#475569" />
                 <Tooltip
@@ -373,7 +370,7 @@ export default function LeagueDashboard({
               </BarChart>
             </ResponsiveContainer>
             <p className="text-[11px] text-slate-500 mt-2">
-              Actual wins minus expected wins from an all-play record (each team's score vs. every other team, every week). Positive means a kinder schedule than their scoring earned; negative means a tougher one.
+              Actual wins minus expected wins from an all-play record. Positive means a kinder schedule than their scoring earned; negative means a tougher one.
             </p>
           </Card>
         </div>
