@@ -12,16 +12,18 @@ export async function POST(request) {
 
   const formatSide = (players) =>
     players.length
-      ? players.map((p) => `${p.name} (${p.pos}) — ${p.value ?? "unranked"}`).join("\n")
+      ? players.map((p) => `${p.name} (${p.pos}) — ${p.value != null ? p.value.toLocaleString() : "unranked"}`).join("\n")
       : "*nothing*";
 
+  // sideA/sideB are each team's OWN roster picks — i.e. what that team is
+  // sending away, not what they're getting back (see TradeAnalyzer.jsx).
   const embed = {
     title: "🔄 Trade Proposal",
     color: 0xe8a33d,
     fields: [
-      { name: `${teamAName || "Side A"} receives`, value: formatSide(sideA), inline: true },
-      { name: `${teamBName || "Side B"} receives`, value: formatSide(sideB), inline: true },
-      { name: "Verdict", value: `${verdictLabel} (${totalA} vs ${totalB})` },
+      { name: `${teamAName || "Side A"} sends`, value: formatSide(sideA), inline: true },
+      { name: `${teamBName || "Side B"} sends`, value: formatSide(sideB), inline: true },
+      { name: "Verdict", value: `${verdictLabel} (${totalA.toLocaleString()} vs ${totalB.toLocaleString()})` },
     ],
     footer: { text: "League of Integrity — Trade Analyzer" },
   };
