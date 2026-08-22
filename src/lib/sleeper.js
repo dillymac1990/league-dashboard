@@ -80,13 +80,18 @@ export async function getLeagueData() {
   }
 
   // --- Points by starting slot, summed across the regular season; also
-  // collect each roster's weekly score to compute an all-play luck index. ---
+  // collect each roster's weekly score (for luck) and each player's season
+  // total (for draft value) along the way — same fetch, three uses. ---
   const ptsByPosByRoster = {};
   const weeklyScoresByRoster = {};
+  const seasonPtsByPlayerId = {};
   for (let w = 1; w <= regularSeasonWeeks; w++) {
     const matchups = await sleeperFetch(`/league/${LEAGUE_ID}/matchups/${w}`, 300);
     for (const m of matchups) {
       (weeklyScoresByRoster[m.roster_id] ??= []).push(m.points || 0);
+      for (const [pid, pts] of Object.entries(m.players_points || {})) {
+        seasonPtsByPlayerId[pid] = (seasonPtsByPlayerId[pid] || 0) + pts;
+      }
       if (!m.starters || !m.starters_points) continue;
       const bucket = (ptsByPosByRoster[m.roster_id] ??= {});
       m.starters.forEach((pid, i) => {
@@ -188,6 +193,45 @@ export async function getLeagueData() {
   }
   trades.sort((a, b) => b.week - a.week);
 
+  // --- Draft ---
+  // Value = pick number - "finish rank" (players sorted by season points,
+  // best first). Positive means drafted later than they performed (a
+  // steal); negative means drafted earlier than they performed (a reach).
+  let draftPicks = [];
+  let draftValueByTeam = [];
+  if (league.draft_id) {
+    const rawPicks = await sleeperFetch(`/draft/${league.draft_id}/picks`, 3600);
+    const finishRank = {};
+    [...rawPicks]
+      .sort((a, b) => (seasonPtsByPlayerId[b.player_id] || 0) - (seasonPtsByPlayerId[a.player_id] || 0))
+      .forEach((p, i) => (finishRank[p.player_id] = i + 1));
+
+    draftPicks = rawPicks
+      .map((p) => {
+        const seasonPts = Number((seasonPtsByPlayerId[p.player_id] || 0).toFixed(1));
+        return {
+          pickNo: p.pick_no,
+          round: p.round,
+          teamId: p.roster_id,
+          teamName: rosterIdToOwner[p.roster_id]?.teamName ?? `Team ${p.roster_id}`,
+          player: `${p.metadata?.first_name ?? ""} ${p.metadata?.last_name ?? ""}`.trim() || playerName(players, p.player_id),
+          pos: p.metadata?.position || players[p.player_id]?.position || "?",
+          seasonPts,
+          value: p.pick_no - finishRank[p.player_id],
+        };
+      })
+      .sort((a, b) => a.pickNo - b.pickNo);
+
+    const byTeam = {};
+    for (const p of draftPicks) (byTeam[p.teamId] ??= []).push(p.value);
+    draftValueByTeam = Object.entries(byTeam)
+      .map(([teamId, values]) => ({
+        name: rosterIdToOwner[teamId]?.teamName ?? `Team ${teamId}`,
+        avgValue: Number((values.reduce((s, v) => s + v, 0) / values.length).toFixed(1)),
+      }))
+      .sort((a, b) => b.avgValue - a.avgValue);
+  }
+
   return {
     leagueName: league.name,
     season: league.season,
@@ -198,5 +242,7 @@ export async function getLeagueData() {
     rosterPositions,
     teams,
     trades,
+    draftPicks,
+    draftValueByTeam,
   };
 }

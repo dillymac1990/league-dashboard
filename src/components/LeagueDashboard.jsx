@@ -89,6 +89,8 @@ export default function LeagueDashboard({
   rosterPositions,
   teams,
   trades,
+  draftPicks,
+  draftValueByTeam,
 }) {
   const [activeTab, setActiveTab] = useState("season");
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
@@ -136,6 +138,28 @@ export default function LeagueDashboard({
         .sort((a, b) => b.luck - a.luck),
     [teams]
   );
+
+  const draftValueData = useMemo(
+    () =>
+      [...(draftValueByTeam ?? [])]
+        .sort((a, b) => b.avgValue - a.avgValue)
+        .map((t, i, arr) => ({ ...t, color: benchGradientColor(arr.length > 1 ? i / (arr.length - 1) : 0) })),
+    [draftValueByTeam]
+  );
+
+  const topSteals = useMemo(
+    () => [...(draftPicks ?? [])].sort((a, b) => b.value - a.value).slice(0, 5),
+    [draftPicks]
+  );
+  const topReaches = useMemo(
+    () => [...(draftPicks ?? [])].sort((a, b) => a.value - b.value).slice(0, 5),
+    [draftPicks]
+  );
+  const picksByRound = useMemo(() => {
+    const rounds = {};
+    for (const p of draftPicks ?? []) (rounds[p.round] ??= []).push(p);
+    return Object.entries(rounds).sort((a, b) => Number(a[0]) - Number(b[0]));
+  }, [draftPicks]);
 
   const TRADES_PER_PAGE = 3;
   const totalTradePages = Math.ceil(trades.length / TRADES_PER_PAGE);
@@ -495,13 +519,106 @@ export default function LeagueDashboard({
         )}
 
         {activeTab === "draft" && (
-          <Card className="p-8 text-center">
-            <Hammer size={28} className="mx-auto text-slate-600 mb-3" />
-            <h2 className="text-lg font-bold text-slate-200 mb-1">Draft Stats coming soon</h2>
-            <p className="text-sm text-slate-500 max-w-md mx-auto">
-              Pick-by-pick draft data isn&apos;t wired up yet — this tab is reserved for draft grades, value-over-ADP, and pick history once that&apos;s built.
+        <>
+        {draftPicks && draftPicks.length > 0 ? (
+        <>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-5">
+            <SectionLabel eyebrow="Value Over Finish" title="Draft Value by Team" />
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={draftValueData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
+                <CartesianGrid stroke="#1e293b" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={{ stroke: "#334155" }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: "#94a3b8", fontSize: 10 }}
+                  axisLine={{ stroke: "#334155" }}
+                  width={110}
+                />
+                <ReferenceLine x={0} stroke="#475569" />
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, fontSize: 12 }}
+                  itemStyle={{ color: "#e2e8f0" }}
+                  formatter={(v) => [`${v > 0 ? "+" : ""}${v} avg. spots per pick`, "Draft value"]}
+                />
+                <Bar dataKey="avgValue" radius={[4, 4, 4, 4]}>
+                  {draftValueData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="text-[11px] text-slate-500 mt-2">
+              Average of (pick number − season points finish rank) across each team&apos;s picks. Positive means players outperformed where they were drafted.
             </p>
           </Card>
+
+          <Card className="p-5">
+            <SectionLabel eyebrow="Hits &amp; Misses" title="Steals &amp; Reaches" />
+            <div className="mb-1 text-[11px] font-semibold text-emerald-400 flex items-center gap-1.5">
+              <TrendingUp size={12} /> Biggest Steals
+            </div>
+            <div className="space-y-1 mb-4">
+              {topSteals.map((p) => (
+                <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
+                  <span className="text-slate-300 truncate">
+                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
+                  </span>
+                  <span className="font-mono text-emerald-400 shrink-0 ml-2">+{p.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mb-1 text-[11px] font-semibold text-rose-400 flex items-center gap-1.5">
+              <TrendingDown size={12} /> Biggest Reaches
+            </div>
+            <div className="space-y-1">
+              {topReaches.map((p) => (
+                <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
+                  <span className="text-slate-300 truncate">
+                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
+                  </span>
+                  <span className="font-mono text-rose-400 shrink-0 ml-2">{p.value}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="mt-6">
+          <Card className="p-5">
+            <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
+            <div className="max-h-[420px] overflow-y-auto pr-1 space-y-4">
+              {picksByRound.map(([round, picks]) => (
+                <div key={round}>
+                  <div className="text-[11px] font-mono text-amber-400 mb-1.5">Round {round}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {picks.map((p) => (
+                      <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
+                        <span className="text-slate-500 font-mono w-8 shrink-0">{p.pickNo}.</span>
+                        <span className="text-slate-300 flex-1 truncate">
+                          {p.player} <span className="text-slate-500">({p.pos})</span>
+                        </span>
+                        <span className="text-slate-500 truncate ml-2 max-w-[35%] text-right">{p.teamName}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+        </>
+        ) : (
+          <Card className="p-8 text-center">
+            <Hammer size={28} className="mx-auto text-slate-600 mb-3" />
+            <h2 className="text-lg font-bold text-slate-200 mb-1">No draft data available</h2>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              This league&apos;s draft hasn&apos;t happened yet, or Sleeper has no draft on record for it.
+            </p>
+          </Card>
+        )}
+        </>
         )}
 
         <div className="mt-8 flex items-center gap-2 text-[11px] text-slate-600">
