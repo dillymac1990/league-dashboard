@@ -6,6 +6,7 @@ import {
   Cell, ReferenceLine, PieChart, Pie, Legend
 } from "recharts";
 import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
+import TradeAnalyzer from "./TradeAnalyzer";
 
 // ---------------------------------------------------------------------------
 // MOCK LEAGUE DATA — swap this block for live Sleeper API data later.
@@ -399,6 +400,13 @@ export default function LeagueDashboard() {
             <p className="text-[11px] text-slate-500 mt-2">
               Season-to-date points each team's optimal lineup would have scored, minus what they actually started.
             </p>
+          </Card>
+        </div>
+
+        {/* Trade Analyzer */}
+        <div className="mt-6">
+          <Card className="p-5">
+            <TradeAnalyzer />
           </Card>
         </div>
 
