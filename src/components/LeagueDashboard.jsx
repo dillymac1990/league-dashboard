@@ -5,12 +5,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend, LabelList
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, Newspaper } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, CalendarDays } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
 
 const TABS = [
   { id: "season", label: "In-Season" },
-  { id: "roster-news", label: "Rosters & News" },
+  { id: "weekly", label: "Weekly Summary" },
   { id: "trades", label: "Trade Lab" },
   { id: "draft", label: "Draft Stats" },
 ];
@@ -689,12 +689,12 @@ export default function LeagueDashboard({
         </>
         )}
 
-        {activeTab === "roster-news" && (
+        {activeTab === "weekly" && (
           <Card className="p-8 text-center">
-            <Newspaper size={28} className="mx-auto text-slate-600 mb-3" />
-            <h2 className="text-lg font-bold text-slate-200 mb-1">Rosters &amp; News coming soon</h2>
+            <CalendarDays size={28} className="mx-auto text-slate-600 mb-3" />
+            <h2 className="text-lg font-bold text-slate-200 mb-1">Weekly Summary coming soon</h2>
             <p className="text-sm text-slate-500 max-w-md mx-auto">
-              Reserved for full team rosters (starters and bench, not just position counts) and NFL player news/injury updates.
+              Reserved for a week-by-week recap — matchup results, top performers, closest game, biggest blowout. Needs matchup pairings pulled in from Sleeper, which aren&apos;t wired up yet.
             </p>
           </Card>
         )}
