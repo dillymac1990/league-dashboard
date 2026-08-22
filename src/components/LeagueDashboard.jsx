@@ -147,13 +147,14 @@ export default function LeagueDashboard({
     [draftValueByTeam]
   );
 
+  const nonQbPicks = useMemo(() => (draftPicks ?? []).filter((p) => p.pos !== "QB"), [draftPicks]);
   const topSteals = useMemo(
-    () => [...(draftPicks ?? [])].sort((a, b) => b.value - a.value).slice(0, 5),
-    [draftPicks]
+    () => [...nonQbPicks].sort((a, b) => b.value - a.value).slice(0, 5),
+    [nonQbPicks]
   );
   const topReaches = useMemo(
-    () => [...(draftPicks ?? [])].sort((a, b) => a.value - b.value).slice(0, 5),
-    [draftPicks]
+    () => [...nonQbPicks].sort((a, b) => a.value - b.value).slice(0, 5),
+    [nonQbPicks]
   );
   const picksByRound = useMemo(() => {
     const rounds = {};
@@ -565,7 +566,10 @@ export default function LeagueDashboard({
                   <span className="text-slate-300 truncate">
                     R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
                   </span>
-                  <span className="font-mono text-emerald-400 shrink-0 ml-2">+{p.value}</span>
+                  <span className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="text-slate-500 truncate max-w-[90px]">{p.owner}</span>
+                    <span className="font-mono text-emerald-400">+{p.value}</span>
+                  </span>
                 </div>
               ))}
             </div>
@@ -578,7 +582,10 @@ export default function LeagueDashboard({
                   <span className="text-slate-300 truncate">
                     R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
                   </span>
-                  <span className="font-mono text-rose-400 shrink-0 ml-2">{p.value}</span>
+                  <span className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="text-slate-500 truncate max-w-[90px]">{p.owner}</span>
+                    <span className="font-mono text-rose-400">{p.value}</span>
+                  </span>
                 </div>
               ))}
             </div>

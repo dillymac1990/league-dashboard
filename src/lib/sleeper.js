@@ -214,6 +214,7 @@ export async function getLeagueData() {
           round: p.round,
           teamId: p.roster_id,
           teamName: rosterIdToOwner[p.roster_id]?.teamName ?? `Team ${p.roster_id}`,
+          owner: rosterIdToOwner[p.roster_id]?.owner ?? "Unknown",
           player: `${p.metadata?.first_name ?? ""} ${p.metadata?.last_name ?? ""}`.trim() || playerName(players, p.player_id),
           pos: p.metadata?.position || players[p.player_id]?.position || "?",
           seasonPts,
