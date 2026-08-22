@@ -14,27 +14,20 @@ const TABS = [
   { id: "draft", label: "Draft Stats" },
 ];
 
+// Shared position palette (Sleeper-style, sampled from a real Sleeper draft
+// board screenshot) — used by the Draft Board grid, Team Composition pie,
+// and Points by Position chart alike. K wasn't visible in the sample this
+// league doesn't roster one, so that value is a guess. FLEX has no Sleeper
+// equivalent (it's a lineup slot, not a real position), so it keeps a
+// neutral gray.
 const POS_COLOR = {
-  QB: "#E8A33D",
-  RB: "#4FD1A0",
-  WR: "#5FA8F5",
-  TE: "#C77DFF",
-  FLEX: "#8892A6",
-  DEF: "#F76C6C",
-  K: "#F5D76E",
-};
-
-// Sleeper-style draft board palette (solid, position-coded), for the Draft
-// Board grid specifically — distinct from POS_COLOR used in the charts above.
-// Sampled directly from a Sleeper draft board screenshot. K wasn't visible
-// in the sample (this league doesn't roster one), so that value is a guess.
-const DRAFT_POS_COLOR = {
   QB: "#B8507C",
   RB: "#4FAE7F",
   WR: "#4A85C4",
   TE: "#C98A45",
   K: "#B48EE0",
   DEF: "#A8706B",
+  FLEX: "#8892A6",
 };
 
 // Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
@@ -650,7 +643,7 @@ export default function LeagueDashboard({
                       {draftBoard.slots.map((slot) => {
                         const p = draftBoard.cell[`${round}-${slot}`];
                         if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
-                        const bg = DRAFT_POS_COLOR[p.pos] || "#94a3b8";
+                        const bg = POS_COLOR[p.pos] || "#94a3b8";
                         return (
                           <td
                             key={slot}
@@ -669,7 +662,7 @@ export default function LeagueDashboard({
               </table>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3">
-              {Object.entries(DRAFT_POS_COLOR).map(([pos, color]) => (
+              {Object.entries(POS_COLOR).filter(([pos]) => pos !== "FLEX").map(([pos, color]) => (
                 <div key={pos} className="flex items-center gap-1">
                   <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
                   <span className="text-[10px] text-slate-500">{pos}</span>
