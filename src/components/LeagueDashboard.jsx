@@ -27,12 +27,12 @@ const POS_COLOR = {
 // Sleeper-style draft board palette (solid, position-coded), for the Draft
 // Board grid specifically — distinct from POS_COLOR used in the charts above.
 const DRAFT_POS_COLOR = {
-  QB: "#F472B6",
-  RB: "#60A5FA",
-  WR: "#4ADE80",
-  TE: "#FB923C",
-  K: "#C084FC",
-  DEF: "#A87C5A",
+  QB: "#EF7FA8",
+  RB: "#5FCF80",
+  WR: "#5B9BD5",
+  TE: "#F0A860",
+  K: "#B48EE0",
+  DEF: "#A9825C",
 };
 
 // Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
