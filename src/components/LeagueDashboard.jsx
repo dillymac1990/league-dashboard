@@ -24,6 +24,17 @@ const POS_COLOR = {
   K: "#F5D76E",
 };
 
+// Sleeper-style draft board palette (solid, position-coded), for the Draft
+// Board grid specifically — distinct from POS_COLOR used in the charts above.
+const DRAFT_POS_COLOR = {
+  QB: "#F472B6",
+  RB: "#60A5FA",
+  WR: "#4ADE80",
+  TE: "#FB923C",
+  K: "#C084FC",
+  DEF: "#A87C5A",
+};
+
 // Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
 // rank among bench-points-left rather than the raw value, so the colors
 // spread evenly across the full field regardless of how the values cluster.
@@ -635,9 +646,7 @@ export default function LeagueDashboard({
                       {draftBoard.slots.map((slot) => {
                         const p = draftBoard.cell[`${round}-${slot}`];
                         if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
-                        const { min, max } = draftBoard.valueRange;
-                        const t = max > min ? 1 - (p.value - min) / (max - min) : 0.5;
-                        const bg = benchGradientColor(t).replace("rgb(", "rgba(").replace(")", ", 0.16)");
+                        const bg = DRAFT_POS_COLOR[p.pos] || "#94a3b8";
                         return (
                           <td
                             key={slot}
@@ -645,8 +654,8 @@ export default function LeagueDashboard({
                             className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
                             style={{ background: bg }}
                           >
-                            <div className="text-slate-200 font-semibold truncate">{p.player}</div>
-                            <div className="text-slate-500 font-mono truncate">{p.pos} · {p.pickNo}</div>
+                            <div className="text-black font-semibold truncate">{p.player}</div>
+                            <div className="text-black/70 font-mono truncate">{p.pos} · {p.pickNo}</div>
                           </td>
                         );
                       })}
@@ -655,8 +664,16 @@ export default function LeagueDashboard({
                 </tbody>
               </table>
             </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3">
+              {Object.entries(DRAFT_POS_COLOR).map(([pos, color]) => (
+                <div key={pos} className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
+                  <span className="text-[10px] text-slate-500">{pos}</span>
+                </div>
+              ))}
+            </div>
             <p className="text-[11px] text-slate-500 mt-2">
-              Columns are draft slots (fixed per manager for the whole snake draft). Cell tint follows the same value scale as the chart above — green ran hot, red busted.
+              Columns are draft slots (fixed per manager for the whole snake draft).
             </p>
           </Card>
         </div>
