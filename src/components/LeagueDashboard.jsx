@@ -5,13 +5,14 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend, LabelList
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, Newspaper } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
 
 const TABS = [
   { id: "season", label: "In-Season" },
   { id: "trades", label: "Trade Lab" },
   { id: "draft", label: "Draft Stats" },
+  { id: "roster-news", label: "Roster & News" },
 ];
 
 // Shared position palette (Sleeper-style, sampled from a real Sleeper draft
@@ -686,6 +687,16 @@ export default function LeagueDashboard({
           </Card>
         )}
         </>
+        )}
+
+        {activeTab === "roster-news" && (
+          <Card className="p-8 text-center">
+            <Newspaper size={28} className="mx-auto text-slate-600 mb-3" />
+            <h2 className="text-lg font-bold text-slate-200 mb-1">Roster &amp; News coming soon</h2>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              Reserved for full team rosters (starters and bench, not just position counts) and NFL player news/injury updates.
+            </p>
+          </Card>
         )}
 
         <div className="mt-8 flex items-center gap-2 text-[11px] text-slate-600">
