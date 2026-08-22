@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, Repeat } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // MOCK LEAGUE DATA — swap this block for live Sleeper API data later.
@@ -117,11 +117,6 @@ const TRADES = [
     teamB: 4, sendB: ["Q. Judkins (RB)", "2027 4th"], receiveB: ["A. Jones (RB)"],
   },
 ];
-
-const tradeActivity = TEAMS.map((t) => ({
-  name: t.name,
-  count: TRADES.filter((tr) => tr.teamA === t.id || tr.teamB === t.id).length,
-})).filter((t) => t.count > 0).sort((a, b) => b.count - a.count);
 
 function Card({ children, className = "" }) {
   return (
@@ -318,8 +313,8 @@ export default function LeagueDashboard() {
         </div>
 
         {/* Trades */}
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 p-5">
+        <div className="mt-6">
+          <Card className="p-5">
             <div className="flex items-center justify-between mb-4">
               <SectionLabel eyebrow="Transaction Log" title="Recent Trades" />
               <span className="text-[11px] text-slate-500 font-mono">{TRADES.length} this season</span>
@@ -355,22 +350,6 @@ export default function LeagueDashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <SectionLabel eyebrow="League Activity" title="Most Active Traders" />
-            <div className="space-y-2">
-              {tradeActivity.map((t) => (
-                <div key={t.name} className="flex items-center gap-2">
-                  <Repeat size={12} className="text-slate-500 shrink-0" />
-                  <span className="text-xs text-slate-300 flex-1 truncate">{t.name}</span>
-                  <span className="text-xs font-mono text-amber-400">{t.count}</span>
-                </div>
-              ))}
-              {tradeActivity.length === 0 && (
-                <div className="text-xs text-slate-500">No trades yet this season.</div>
-              )}
             </div>
           </Card>
         </div>
