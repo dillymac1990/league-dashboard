@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // MOCK LEAGUE DATA — swap this block for live Sleeper API data later.
@@ -186,6 +186,14 @@ function SectionLabel({ eyebrow, title }) {
 
 export default function LeagueDashboard() {
   const [selectedTeamId, setSelectedTeamId] = useState(TEAMS[0].id);
+  const [tradePage, setTradePage] = useState(0);
+
+  const TRADES_PER_PAGE = 3;
+  const totalTradePages = Math.ceil(TRADES.length / TRADES_PER_PAGE);
+  const pagedTrades = TRADES.slice(
+    tradePage * TRADES_PER_PAGE,
+    tradePage * TRADES_PER_PAGE + TRADES_PER_PAGE
+  );
   const team = TEAMS.find((t) => t.id === selectedTeamId);
 
   const compositionData = useMemo(
@@ -402,7 +410,7 @@ export default function LeagueDashboard() {
               <span className="text-[11px] text-slate-500 font-mono">{TRADES.length} this season</span>
             </div>
             <div className="space-y-3">
-              {TRADES.map((tr) => (
+              {pagedTrades.map((tr) => (
                 <div key={tr.id} className="rounded-md border border-slate-700/50 bg-slate-900/40 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5 text-slate-400 text-[11px] font-semibold">
@@ -447,6 +455,27 @@ export default function LeagueDashboard() {
                 </div>
               ))}
             </div>
+            {totalTradePages > 1 && (
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-700/50">
+                <button
+                  onClick={() => setTradePage((p) => Math.max(0, p - 1))}
+                  disabled={tradePage === 0}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                >
+                  <ChevronLeft size={14} /> Prev
+                </button>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  Page {tradePage + 1} of {totalTradePages}
+                </span>
+                <button
+                  onClick={() => setTradePage((p) => Math.min(totalTradePages - 1, p + 1))}
+                  disabled={tradePage === totalTradePages - 1}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                >
+                  Next <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
           </Card>
         </div>
 
