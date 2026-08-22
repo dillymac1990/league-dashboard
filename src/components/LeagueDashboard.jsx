@@ -417,10 +417,14 @@ export default function LeagueDashboard() {
                         <GradeBadge grade={tr.gradeA} />
                       </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
-                        + {tr.receiveA.join(", ")}
+                        {tr.receiveA.map((p) => (
+                          <div key={p}>+ {p}</div>
+                        ))}
                       </div>
                       <div className="text-[11px] text-rose-400">
-                        − {tr.sendA.join(", ")}
+                        {tr.sendA.map((p) => (
+                          <div key={p}>− {p}</div>
+                        ))}
                       </div>
                     </div>
                     <div>
@@ -429,10 +433,14 @@ export default function LeagueDashboard() {
                         <GradeBadge grade={tr.gradeB} />
                       </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
-                        + {tr.receiveB.join(", ")}
+                        {tr.receiveB.map((p) => (
+                          <div key={p}>+ {p}</div>
+                        ))}
                       </div>
                       <div className="text-[11px] text-rose-400">
-                        − {tr.sendB.join(", ")}
+                        {tr.sendB.map((p) => (
+                          <div key={p}>− {p}</div>
+                        ))}
                       </div>
                     </div>
                   </div>
