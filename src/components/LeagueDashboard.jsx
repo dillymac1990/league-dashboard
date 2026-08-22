@@ -602,18 +602,24 @@ export default function LeagueDashboard({
         <div className="mt-6">
           <Card className="p-5">
             <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
-            <div className="max-h-[560px] overflow-auto pr-1">
-              <table className="border-separate border-spacing-1 w-full">
+            <div className="overflow-x-auto">
+              <table className="border-separate border-spacing-1 w-full table-fixed">
+                <colgroup>
+                  <col style={{ width: "34px" }} />
+                  {draftBoard.slots.map((slot) => (
+                    <col key={slot} />
+                  ))}
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="sticky top-0 left-0 z-20 bg-slate-800 text-[10px] text-slate-500 font-mono font-normal px-2 py-1.5 text-left">
+                    <th className="bg-slate-800 text-[10px] text-slate-500 font-mono font-normal px-1.5 py-1.5 text-left">
                       Rd
                     </th>
                     {draftBoard.slots.map((slot) => (
                       <th
                         key={slot}
                         title={draftBoard.slotHeader[slot]?.teamName}
-                        className="sticky top-0 z-10 bg-slate-800 text-[10px] text-slate-300 font-semibold px-2 py-1.5 text-left whitespace-nowrap max-w-[110px] truncate"
+                        className="bg-slate-800 text-[10px] text-slate-300 font-semibold px-1.5 py-1.5 text-left truncate"
                       >
                         {draftBoard.slotHeader[slot]?.owner}
                       </th>
@@ -623,7 +629,7 @@ export default function LeagueDashboard({
                 <tbody>
                   {draftBoard.rounds.map((round) => (
                     <tr key={round}>
-                      <td className="sticky left-0 z-10 bg-slate-800 text-[10px] font-mono text-amber-400 px-2 py-1.5">
+                      <td className="bg-slate-800 text-[10px] font-mono text-amber-400 px-1.5 py-1.5">
                         {round}
                       </td>
                       {draftBoard.slots.map((slot) => {
@@ -636,11 +642,11 @@ export default function LeagueDashboard({
                           <td
                             key={slot}
                             title={`Pick ${p.pickNo} · ${p.player} (${p.pos}) · ${p.seasonPts} pts · ${p.value > 0 ? "+" : ""}${p.value} value`}
-                            className="text-[10px] px-2 py-1.5 rounded whitespace-nowrap"
+                            className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
                             style={{ background: bg }}
                           >
-                            <div className="text-slate-200 font-semibold truncate max-w-[100px]">{p.player}</div>
-                            <div className="text-slate-500 font-mono">{p.pos} · {p.pickNo}</div>
+                            <div className="text-slate-200 font-semibold truncate">{p.player}</div>
+                            <div className="text-slate-500 font-mono truncate">{p.pos} · {p.pickNo}</div>
                           </td>
                         );
                       })}
