@@ -31,7 +31,9 @@ function verdictFor(totalA, totalB) {
   if (diffPct <= 5) {
     return { label: "Fair Trade", style: "bg-emerald-400/15 text-emerald-300 border-emerald-400/50" };
   }
-  const winner = diff > 0 ? "Side A" : "Side B";
+  // Each side's total is the value that team is SENDING away, so the side
+  // giving up less relative value is the one coming out ahead.
+  const winner = diff > 0 ? "Side B" : "Side A";
   if (diffPct <= 15) {
     return { label: `Slight Edge: ${winner}`, style: "bg-amber-400/15 text-amber-300 border-amber-400/50" };
   }
@@ -47,6 +49,7 @@ function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemov
         <span className="text-xs font-semibold text-slate-200">{label}</span>
         <span className="text-xs font-mono text-amber-400">{total.toLocaleString()}</span>
       </div>
+      <div className="text-[10px] text-slate-500 mb-1.5">Pick a team, then the players <span className="text-slate-400">they're sending away</span>.</div>
 
       <select
         value={teamId ?? ""}
