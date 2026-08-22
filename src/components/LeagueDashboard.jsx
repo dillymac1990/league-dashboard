@@ -555,9 +555,9 @@ export default function LeagueDashboard({
           </Card>
 
           <Card className="p-5">
-            <SectionLabel eyebrow="Hits &amp; Misses" title="Steals &amp; Reaches" />
+            <SectionLabel eyebrow="Hits &amp; Misses" title="Values &amp; Busts" />
             <div className="mb-1 text-[11px] font-semibold text-emerald-400 flex items-center gap-1.5">
-              <TrendingUp size={12} /> Biggest Steals
+              <TrendingUp size={12} /> Biggest Values
             </div>
             <div className="space-y-1 mb-4">
               {topSteals.map((p) => (
@@ -570,7 +570,7 @@ export default function LeagueDashboard({
               ))}
             </div>
             <div className="mb-1 text-[11px] font-semibold text-rose-400 flex items-center gap-1.5">
-              <TrendingDown size={12} /> Biggest Reaches
+              <TrendingDown size={12} /> Biggest Busts
             </div>
             <div className="space-y-1">
               {topReaches.map((p) => (
