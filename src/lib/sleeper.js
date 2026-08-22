@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { getTradeGrades } from "./tradeGrades";
 
 // Server-only data layer for the Sleeper Fantasy Football API (no API key needed).
 // To point this at a different league (e.g. once the current season has
@@ -133,6 +134,7 @@ export async function getLeagueData() {
       const playersToB = Object.entries(t.adds || {}).filter(([, r]) => r === rB).map(([pid]) => playerLabel(players, pid));
       const picksToA = (t.draft_picks || []).filter((p) => p.owner_id === rA).map(pickLabel);
       const picksToB = (t.draft_picks || []).filter((p) => p.owner_id === rB).map(pickLabel);
+      const { gradeA, gradeB } = getTradeGrades(t.transaction_id);
 
       trades.push({
         id: t.transaction_id,
@@ -141,11 +143,11 @@ export async function getLeagueData() {
         teamA: rA,
         receiveA: [...playersToA, ...picksToA],
         sendA: [...playersToB, ...picksToB],
-        gradeA: null,
+        gradeA,
         teamB: rB,
         receiveB: [...playersToB, ...picksToB],
         sendB: [...playersToA, ...picksToA],
-        gradeB: null,
+        gradeB,
       });
     }
   }
