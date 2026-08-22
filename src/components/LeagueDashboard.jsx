@@ -5,8 +5,14 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
+
+const TABS = [
+  { id: "season", label: "In-Season" },
+  { id: "trades", label: "Trade Lab" },
+  { id: "draft", label: "Draft Stats" },
+];
 
 const POS_COLOR = {
   QB: "#E8A33D",
@@ -84,6 +90,7 @@ export default function LeagueDashboard({
   teams,
   trades,
 }) {
+  const [activeTab, setActiveTab] = useState("season");
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
   const [tradePage, setTradePage] = useState(0);
 
@@ -178,6 +185,25 @@ export default function LeagueDashboard({
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex items-center gap-1 mb-6 border-b border-slate-800">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+                activeTab === tab.id
+                  ? "border-amber-400 text-amber-400"
+                  : "border-transparent text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "season" && (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Standings */}
           <Card className="lg:col-span-1 p-5">
@@ -374,9 +400,13 @@ export default function LeagueDashboard({
             </p>
           </Card>
         </div>
+        </>
+        )}
 
+        {activeTab === "trades" && (
+        <>
         {/* Trade Analyzer */}
-        <div className="mt-6">
+        <div>
           <Card className="p-5">
             <TradeAnalyzer teams={teams} />
           </Card>
@@ -461,6 +491,18 @@ export default function LeagueDashboard({
             )}
           </Card>
         </div>
+        </>
+        )}
+
+        {activeTab === "draft" && (
+          <Card className="p-8 text-center">
+            <Hammer size={28} className="mx-auto text-slate-600 mb-3" />
+            <h2 className="text-lg font-bold text-slate-200 mb-1">Draft Stats coming soon</h2>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              Pick-by-pick draft data isn&apos;t wired up yet — this tab is reserved for draft grades, value-over-ADP, and pick history once that&apos;s built.
+            </p>
+          </Card>
+        )}
 
         <div className="mt-8 flex items-center gap-2 text-[11px] text-slate-600">
           <Shield size={12} />
