@@ -26,13 +26,15 @@ const POS_COLOR = {
 
 // Sleeper-style draft board palette (solid, position-coded), for the Draft
 // Board grid specifically — distinct from POS_COLOR used in the charts above.
+// Sampled directly from a Sleeper draft board screenshot. K wasn't visible
+// in the sample (this league doesn't roster one), so that value is a guess.
 const DRAFT_POS_COLOR = {
-  QB: "#EF7FA8",
-  RB: "#5FCF80",
-  WR: "#5B9BD5",
-  TE: "#F0A860",
+  QB: "#B8507C",
+  RB: "#4FAE7F",
+  WR: "#4A85C4",
+  TE: "#C98A45",
   K: "#B48EE0",
-  DEF: "#A9825C",
+  DEF: "#6B3A38",
 };
 
 // Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
@@ -647,6 +649,7 @@ export default function LeagueDashboard({
                         const p = draftBoard.cell[`${round}-${slot}`];
                         if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
                         const bg = DRAFT_POS_COLOR[p.pos] || "#94a3b8";
+                        const dark = p.pos === "DEF";
                         return (
                           <td
                             key={slot}
@@ -654,8 +657,8 @@ export default function LeagueDashboard({
                             className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
                             style={{ background: bg }}
                           >
-                            <div className="text-black font-semibold truncate">{p.player}</div>
-                            <div className="text-black/70 font-mono truncate">{p.pos} · {p.pickNo}</div>
+                            <div className={`font-semibold truncate ${dark ? "text-white" : "text-black"}`}>{p.player}</div>
+                            <div className={`font-mono truncate ${dark ? "text-white/70" : "text-black/70"}`}>{p.pos} · {p.pickNo}</div>
                           </td>
                         );
                       })}
