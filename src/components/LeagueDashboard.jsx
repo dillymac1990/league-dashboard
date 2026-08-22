@@ -156,10 +156,17 @@ export default function LeagueDashboard({
     () => [...nonQbPicks].sort((a, b) => a.value - b.value).slice(0, 5),
     [nonQbPicks]
   );
-  const picksByRound = useMemo(() => {
-    const rounds = {};
-    for (const p of draftPicks ?? []) (rounds[p.round] ??= []).push(p);
-    return Object.entries(rounds).sort((a, b) => Number(a[0]) - Number(b[0]));
+  const draftBoard = useMemo(() => {
+    const picks = draftPicks ?? [];
+    const slots = [...new Set(picks.map((p) => p.slot))].sort((a, b) => a - b);
+    const rounds = [...new Set(picks.map((p) => p.round))].sort((a, b) => a - b);
+    const slotHeader = {};
+    for (const p of picks) if (!slotHeader[p.slot]) slotHeader[p.slot] = { teamName: p.teamName, owner: p.owner };
+    const cell = {};
+    for (const p of picks) cell[`${p.round}-${p.slot}`] = p;
+    const values = picks.map((p) => p.value);
+    const valueRange = { min: Math.min(...values, 0), max: Math.max(...values, 0) };
+    return { slots, rounds, slotHeader, cell, valueRange };
   }, [draftPicks]);
 
   const TRADES_PER_PAGE = 3;
@@ -595,24 +602,56 @@ export default function LeagueDashboard({
         <div className="mt-6">
           <Card className="p-5">
             <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
-            <div className="max-h-[420px] overflow-y-auto pr-1 space-y-4">
-              {picksByRound.map(([round, picks]) => (
-                <div key={round}>
-                  <div className="text-[11px] font-mono text-amber-400 mb-1.5">Round {round}</div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    {picks.map((p) => (
-                      <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
-                        <span className="text-slate-500 font-mono w-8 shrink-0">{p.pickNo}.</span>
-                        <span className="text-slate-300 flex-1 truncate">
-                          {p.player} <span className="text-slate-500">({p.pos})</span>
-                        </span>
-                        <span className="text-slate-500 truncate ml-2 max-w-[35%] text-right">{p.teamName}</span>
-                      </div>
+            <div className="max-h-[560px] overflow-auto pr-1">
+              <table className="border-separate border-spacing-1 w-full">
+                <thead>
+                  <tr>
+                    <th className="sticky top-0 left-0 z-20 bg-slate-800 text-[10px] text-slate-500 font-mono font-normal px-2 py-1.5 text-left">
+                      Rd
+                    </th>
+                    {draftBoard.slots.map((slot) => (
+                      <th
+                        key={slot}
+                        title={draftBoard.slotHeader[slot]?.teamName}
+                        className="sticky top-0 z-10 bg-slate-800 text-[10px] text-slate-300 font-semibold px-2 py-1.5 text-left whitespace-nowrap max-w-[110px] truncate"
+                      >
+                        {draftBoard.slotHeader[slot]?.owner}
+                      </th>
                     ))}
-                  </div>
-                </div>
-              ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {draftBoard.rounds.map((round) => (
+                    <tr key={round}>
+                      <td className="sticky left-0 z-10 bg-slate-800 text-[10px] font-mono text-amber-400 px-2 py-1.5">
+                        {round}
+                      </td>
+                      {draftBoard.slots.map((slot) => {
+                        const p = draftBoard.cell[`${round}-${slot}`];
+                        if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
+                        const { min, max } = draftBoard.valueRange;
+                        const t = max > min ? 1 - (p.value - min) / (max - min) : 0.5;
+                        const bg = benchGradientColor(t).replace("rgb(", "rgba(").replace(")", ", 0.16)");
+                        return (
+                          <td
+                            key={slot}
+                            title={`Pick ${p.pickNo} · ${p.player} (${p.pos}) · ${p.seasonPts} pts · ${p.value > 0 ? "+" : ""}${p.value} value`}
+                            className="text-[10px] px-2 py-1.5 rounded whitespace-nowrap"
+                            style={{ background: bg }}
+                          >
+                            <div className="text-slate-200 font-semibold truncate max-w-[100px]">{p.player}</div>
+                            <div className="text-slate-500 font-mono">{p.pos} · {p.pickNo}</div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+            <p className="text-[11px] text-slate-500 mt-2">
+              Columns are draft slots (fixed per manager for the whole snake draft). Cell tint follows the same value scale as the chart above — green ran hot, red busted.
+            </p>
           </Card>
         </div>
         </>

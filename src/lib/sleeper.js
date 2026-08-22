@@ -212,6 +212,7 @@ export async function getLeagueData() {
         return {
           pickNo: p.pick_no,
           round: p.round,
+          slot: p.draft_slot,
           teamId: p.roster_id,
           teamName: rosterIdToOwner[p.roster_id]?.teamName ?? `Team ${p.roster_id}`,
           owner: rosterIdToOwner[p.roster_id]?.owner ?? "Unknown",
