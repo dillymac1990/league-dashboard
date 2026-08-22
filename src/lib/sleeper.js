@@ -79,11 +79,14 @@ export async function getLeagueData() {
     };
   }
 
-  // --- Points by starting slot, summed across the regular season ---
+  // --- Points by starting slot, summed across the regular season; also
+  // collect each roster's weekly score to compute an all-play luck index. ---
   const ptsByPosByRoster = {};
+  const weeklyScoresByRoster = {};
   for (let w = 1; w <= regularSeasonWeeks; w++) {
     const matchups = await sleeperFetch(`/league/${LEAGUE_ID}/matchups/${w}`, 300);
     for (const m of matchups) {
+      (weeklyScoresByRoster[m.roster_id] ??= []).push(m.points || 0);
       if (!m.starters || !m.starters_points) continue;
       const bucket = (ptsByPosByRoster[m.roster_id] ??= {});
       m.starters.forEach((pid, i) => {
@@ -91,6 +94,31 @@ export async function getLeagueData() {
         bucket[slot] = (bucket[slot] || 0) + (m.starters_points[i] || 0);
       });
     }
+  }
+
+  // All-play luck: each week, compare a team's score against every other
+  // team (not just their actual opponent) to get a hypothetical win total.
+  // Luck = actual wins - expected wins from that all-play record. Positive
+  // means the schedule was kind (weaker matchups than their scoring earned);
+  // negative means the schedule was tougher than their scoring deserved.
+  const luckByRoster = {};
+  for (const rosterId in weeklyScoresByRoster) {
+    let allPlayWins = 0;
+    let allPlayTies = 0;
+    let allPlayGames = 0;
+    const ownScores = weeklyScoresByRoster[rosterId];
+    ownScores.forEach((score, week) => {
+      for (const otherId in weeklyScoresByRoster) {
+        if (otherId === rosterId) continue;
+        const otherScore = weeklyScoresByRoster[otherId][week];
+        if (otherScore == null) continue;
+        allPlayGames++;
+        if (score > otherScore) allPlayWins++;
+        else if (score === otherScore) allPlayTies++;
+      }
+    });
+    const allPlayWinPct = allPlayGames ? (allPlayWins + allPlayTies * 0.5) / allPlayGames : 0;
+    luckByRoster[rosterId] = allPlayWinPct * ownScores.length;
   }
 
   const teams = rosters.map((r) => {
@@ -108,6 +136,9 @@ export async function getLeagueData() {
     const ptsByPos = {};
     for (const pos of slotPositions) ptsByPos[pos] = Number((ptsByPosByRoster[r.roster_id]?.[pos] || 0).toFixed(1));
 
+    const expectedWins = luckByRoster[r.roster_id] ?? 0;
+    const luckIndex = Number((r.settings.wins - expectedWins).toFixed(1));
+
     return {
       id: r.roster_id,
       name: rosterIdToOwner[r.roster_id].teamName,
@@ -116,6 +147,8 @@ export async function getLeagueData() {
       pf: Number(pf.toFixed(1)),
       pa: Number(pa.toFixed(1)),
       benchPtsLeft: Number(Math.max(0, optimal - pf).toFixed(1)),
+      luckIndex,
+      expectedWins: Number(expectedWins.toFixed(1)),
       roster,
       ptsByPos,
     };

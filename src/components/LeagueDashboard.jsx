@@ -117,6 +117,19 @@ export default function LeagueDashboard({
     [teams]
   );
 
+  const luckData = useMemo(
+    () =>
+      [...teams]
+        .map((t) => ({
+          name: t.name,
+          luck: t.luckIndex,
+          wins: t.record[0],
+          expected: t.expectedWins,
+        }))
+        .sort((a, b) => b.luck - a.luck),
+    [teams]
+  );
+
   const TRADES_PER_PAGE = 3;
   const totalTradePages = Math.ceil(trades.length / TRADES_PER_PAGE);
   const pagedTrades = trades.slice(
@@ -327,6 +340,40 @@ export default function LeagueDashboard({
             </ResponsiveContainer>
             <p className="text-[11px] text-slate-500 mt-2">
               Season-to-date points each team's optimal lineup would have scored, minus what they actually started.
+            </p>
+          </Card>
+        </div>
+
+        {/* Luck index */}
+        <div className="mt-6">
+          <Card className="p-5">
+            <SectionLabel eyebrow="Schedule Luck" title="Luck Index" />
+            <ResponsiveContainer width="100%" height={340}>
+              <BarChart data={luckData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+                <CartesianGrid stroke="#1e293b" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={{ stroke: "#334155" }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  axisLine={{ stroke: "#334155" }}
+                  width={140}
+                />
+                <ReferenceLine x={0} stroke="#475569" />
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, fontSize: 12 }}
+                  itemStyle={{ color: "#e2e8f0" }}
+                  formatter={(v, _n, p) => [`${v > 0 ? "+" : ""}${v} (${p.payload.wins} actual wins vs. ${p.payload.expected} expected)`, "Luck"]}
+                />
+                <Bar dataKey="luck" radius={[4, 4, 4, 4]}>
+                  {luckData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.luck >= 0 ? "#4FD1A0" : "#F76C6C"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="text-[11px] text-slate-500 mt-2">
+              Actual wins minus expected wins from an all-play record (each team's score vs. every other team, every week). Positive means a kinder schedule than their scoring earned; negative means a tougher one.
             </p>
           </Card>
         </div>
