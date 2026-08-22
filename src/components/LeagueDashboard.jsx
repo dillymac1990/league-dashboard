@@ -27,52 +27,52 @@ const POS_COLOR = {
 
 const TEAMS = [
   {
-    id: 1, name: "Gridiron Guillotine", owner: "Dylan", record: [9, 3], pf: 1487.2, pa: 1301.4,
+    id: 1, name: "Gridiron Guillotine", owner: "Dylan", record: [9, 3], pf: 1487.2, pa: 1301.4, benchPtsLeft: 62.4,
     roster: { QB: ["J. Allen"], RB: ["J. Gibbs", "K. Walker", "T. Etienne"], WR: ["A. Brown", "D. London", "J. Waddle"], TE: ["T. McBride"], FLEX: ["R. Rice"], DEF: ["BUF"], K: ["B. McManus"] },
     ptsByPos: { QB: 312.4, RB: 398.6, WR: 356.1, TE: 118.4, FLEX: 91.2, DEF: 104.8, K: 105.7 },
   },
   {
-    id: 2, name: "Kelce's Angels", owner: "Marcus", record: [8, 4], pf: 1442.8, pa: 1358.9,
+    id: 2, name: "Kelce's Angels", owner: "Marcus", record: [8, 4], pf: 1442.8, pa: 1358.9, benchPtsLeft: 88.1,
     roster: { QB: ["L. Jackson"], RB: ["B. Robinson", "D. Achane", "C. Brown"], WR: ["C. Lamb", "N. Collins", "T. Higgins"], TE: ["S. LaPorta"], FLEX: ["J. Jacobs"], DEF: ["SF"], K: ["J. Tucker"] },
     ptsByPos: { QB: 289.1, RB: 421.3, WR: 340.7, TE: 88.2, FLEX: 76.4, DEF: 92.1, K: 98.3 },
   },
   {
-    id: 3, name: "Purdy League Champs", owner: "Sam", record: [8, 4], pf: 1398.5, pa: 1290.1,
+    id: 3, name: "Purdy League Champs", owner: "Sam", record: [8, 4], pf: 1398.5, pa: 1290.1, benchPtsLeft: 45.7,
     roster: { QB: ["B. Purdy"], RB: ["J. Taylor", "S. Barkley", "R. Stevenson"], WR: ["J. Jefferson", "G. Pickens", "Z. Flowers"], TE: ["B. Bowers"], FLEX: ["D. Montgomery"], DEF: ["DAL"], K: ["H. Butker"] },
     ptsByPos: { QB: 254.9, RB: 372.4, WR: 401.8, TE: 141.6, FLEX: 68.9, DEF: 88.5, K: 96.2 },
   },
   {
-    id: 4, name: "Waiver Wire Wizards", owner: "Priya", record: [7, 5], pf: 1361.0, pa: 1339.7,
+    id: 4, name: "Waiver Wire Wizards", owner: "Priya", record: [7, 5], pf: 1361.0, pa: 1339.7, benchPtsLeft: 103.6,
     roster: { QB: ["J. Daniels"], RB: ["A. Jeanty", "J. Cook", "K. Williams"], WR: ["M. Nabers", "C. Olave", "D. Smith"], TE: ["D. Kincaid"], FLEX: ["C. Skattebo"], DEF: ["PIT"], K: ["Y. Koo"] },
     ptsByPos: { QB: 271.5, RB: 344.9, WR: 318.2, TE: 79.3, FLEX: 82.7, DEF: 95.6, K: 91.4 },
   },
   {
-    id: 5, name: "Sunday Scaries", owner: "Nate", record: [6, 6], pf: 1305.6, pa: 1312.3,
+    id: 5, name: "Sunday Scaries", owner: "Nate", record: [6, 6], pf: 1305.6, pa: 1312.3, benchPtsLeft: 71.3,
     roster: { QB: ["J. Hurts"], RB: ["D. Henry", "O. Hampton", "J. Warren"], WR: ["A. St. Brown", "T. McLaurin", "J. Smith-Njigba"], TE: ["T. Kraft"], FLEX: ["D. Adams"], DEF: ["BAL"], K: ["C. Boswell"] },
     ptsByPos: { QB: 249.8, RB: 331.2, WR: 289.4, TE: 71.8, FLEX: 74.1, DEF: 84.9, K: 89.7 },
   },
   {
-    id: 6, name: "Fumble Rooski", owner: "Chris", record: [6, 6], pf: 1288.9, pa: 1301.5,
+    id: 6, name: "Fumble Rooski", owner: "Chris", record: [6, 6], pf: 1288.9, pa: 1301.5, benchPtsLeft: 129.8,
     roster: { QB: ["D. Prescott"], RB: ["J. Jacobs", "B. Irving", "T. Pollard"], WR: ["D. Metcalf", "C. Sutton", "R. Rice"], TE: ["K. Pitts"], FLEX: ["C. Watson"], DEF: ["HOU"], K: ["D. Carlson"] },
     ptsByPos: { QB: 238.7, RB: 298.5, WR: 312.6, TE: 62.4, FLEX: 79.8, DEF: 90.2, K: 88.1 },
   },
   {
-    id: 7, name: "Hurts So Good", owner: "Elena", record: [5, 7], pf: 1256.3, pa: 1329.8,
+    id: 7, name: "Hurts So Good", owner: "Elena", record: [5, 7], pf: 1256.3, pa: 1329.8, benchPtsLeft: 58.9,
     roster: { QB: ["C. Williams"], RB: ["C. McCaffrey", "R. Harvey", "T. Henderson"], WR: ["G. Wilson", "L. Burden", "S. Diggs"], TE: ["T. Warren"], FLEX: ["J. Downs"], DEF: ["NYJ"], K: ["W. Lutz"] },
     ptsByPos: { QB: 219.4, RB: 289.1, WR: 301.7, TE: 96.3, FLEX: 69.5, DEF: 78.4, K: 83.9 },
   },
   {
-    id: 8, name: "Third and Long Island", owner: "Omar", record: [5, 7], pf: 1231.7, pa: 1318.2,
+    id: 8, name: "Third and Long Island", owner: "Omar", record: [5, 7], pf: 1231.7, pa: 1318.2, benchPtsLeft: 94.2,
     roster: { QB: ["T. Lawrence"], RB: ["J. Croskey-Merritt", "K. Monangai", "A. Jones"], WR: ["T. Hunter", "K. Shakir", "J. Meyers"], TE: ["M. Andrews"], FLEX: ["Q. Judkins"], DEF: ["MIA"], K: ["M. Gay"] },
     ptsByPos: { QB: 224.6, RB: 251.8, WR: 279.3, TE: 84.7, FLEX: 71.2, DEF: 81.6, K: 82.5 },
   },
   {
-    id: 9, name: "Interception Junction", owner: "Robin", record: [4, 8], pf: 1198.4, pa: 1341.6,
+    id: 9, name: "Interception Junction", owner: "Robin", record: [4, 8], pf: 1198.4, pa: 1341.6, benchPtsLeft: 142.5,
     roster: { QB: ["J. Love"], RB: ["Z. Charbonnet", "T. Tracy", "J. Mason"], WR: ["J. Waddle", "R. Odunze", "M. Pittman"], TE: ["I. Likely"], FLEX: ["D. Doubs"], DEF: ["CLE"], K: ["G. Zuerlein"] },
     ptsByPos: { QB: 198.3, RB: 268.4, WR: 274.1, TE: 58.9, FLEX: 66.7, DEF: 74.3, K: 79.8 },
   },
   {
-    id: 10, name: "Mahomes Alone", owner: "Bilal", record: [3, 9], pf: 1142.1, pa: 1389.4,
+    id: 10, name: "Mahomes Alone", owner: "Bilal", record: [3, 9], pf: 1142.1, pa: 1389.4, benchPtsLeft: 76.8,
     roster: { QB: ["P. Mahomes"], RB: ["A. Kamara", "R. White", "T. Spears"], WR: ["X. Worthy", "R. Shaheed", "K. Concepcion"], TE: ["J. Ferguson"], FLEX: ["D. Samuel"], DEF: ["NE"], K: ["C. Santos"] },
     ptsByPos: { QB: 187.9, RB: 231.6, WR: 249.8, TE: 51.2, FLEX: 61.4, DEF: 68.7, K: 76.9 },
   },
@@ -85,6 +85,16 @@ const leagueAvgByPos = POSITIONS.reduce((acc, pos) => {
 }, {});
 
 const standings = [...TEAMS].sort((a, b) => (b.record[0] - a.record[0]) || (b.pf - a.pf));
+
+// Optimal lineup (actual + bench points left on the table), ranked worst-managed first.
+const benchData = [...TEAMS]
+  .map((t) => ({
+    name: t.name,
+    actual: t.pf,
+    optimal: Number((t.pf + t.benchPtsLeft).toFixed(1)),
+    left: t.benchPtsLeft,
+  }))
+  .sort((a, b) => b.left - a.left);
 
 const teamName = (id) => TEAMS.find((t) => t.id === id)?.name ?? "Unknown";
 
@@ -336,6 +346,35 @@ export default function LeagueDashboard() {
               </p>
             </Card>
           </div>
+        </div>
+
+        {/* Bench points left on the table */}
+        <div className="mt-6">
+          <Card className="p-5">
+            <SectionLabel eyebrow="Lineup Efficiency" title="Points Left on the Bench" />
+            <ResponsiveContainer width="100%" height={340}>
+              <BarChart data={benchData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+                <CartesianGrid stroke="#1e293b" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={{ stroke: "#334155" }} unit=" pts" />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  axisLine={{ stroke: "#334155" }}
+                  width={140}
+                />
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, fontSize: 12 }}
+                  itemStyle={{ color: "#e2e8f0" }}
+                  formatter={(v, _n, p) => [`${v} pts (actual ${p.payload.actual} / optimal ${p.payload.optimal})`, "Left on bench"]}
+                />
+                <Bar dataKey="left" radius={[0, 4, 4, 0]} fill="#F76C6C" />
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="text-[11px] text-slate-500 mt-2">
+              Season-to-date points each team's optimal lineup would have scored, minus what they actually started.
+            </p>
+          </Card>
         </div>
 
         {/* Trades */}
