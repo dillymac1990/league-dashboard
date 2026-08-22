@@ -104,6 +104,7 @@ export default function LeagueDashboard({
   trades,
   draftPicks,
   draftValueByTeam,
+  playerValues,
 }) {
   const [activeTab, setActiveTab] = useState("season");
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
@@ -453,7 +454,7 @@ export default function LeagueDashboard({
         {/* Trade Analyzer */}
         <div>
           <Card className="p-5">
-            <TradeAnalyzer teams={teams} />
+            <TradeAnalyzer teams={teams} playerValues={playerValues} />
           </Card>
         </div>
 

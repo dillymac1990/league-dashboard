@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getTradeGrades } from "./tradeGrades";
+import { getPlayerValues } from "./fantasycalc";
 
 // Server-only data layer for the Sleeper Fantasy Football API (no API key needed).
 // To point this at a different league (e.g. once the current season has
@@ -135,7 +136,7 @@ export async function getLeagueData() {
     for (const pos of rosterPositions) roster[pos] = [];
     for (const pid of r.players || []) {
       const pos = players[pid]?.position;
-      if (pos && roster[pos]) roster[pos].push(playerName(players, pid));
+      if (pos && roster[pos]) roster[pos].push({ id: pid, name: playerName(players, pid) });
     }
 
     const ptsByPos = {};
@@ -234,6 +235,14 @@ export async function getLeagueData() {
       .sort((a, b) => b.avgValue - a.avgValue);
   }
 
+  // --- Real trade values (FantasyCalc), keyed by Sleeper player ID ---
+  const numQbs = league.roster_positions.filter((p) => p === "QB").length || 1;
+  const playerValues = await getPlayerValues({
+    numTeams: league.settings.num_teams,
+    numQbs,
+    ppr: league.scoring_settings.rec ?? 1,
+  });
+
   return {
     leagueName: league.name,
     season: league.season,
@@ -246,5 +255,6 @@ export async function getLeagueData() {
     trades,
     draftPicks,
     draftValueByTeam,
+    playerValues,
   };
 }
