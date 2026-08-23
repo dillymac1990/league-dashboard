@@ -226,12 +226,12 @@ export default function LeagueDashboard({
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 mb-6 border-b border-slate-800">
+        <div className="flex items-center gap-1 mb-6 border-b border-slate-800 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === tab.id
                   ? "border-amber-400 text-amber-400"
                   : "border-transparent text-slate-500 hover:text-slate-300"
@@ -517,7 +517,7 @@ export default function LeagueDashboard({
                 <button
                   onClick={() => setTradePage((p) => Math.max(0, p - 1))}
                   disabled={tradePage === 0}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors py-2.5 px-1 -my-2.5"
                 >
                   <ChevronLeft size={14} /> Prev
                 </button>
@@ -527,7 +527,7 @@ export default function LeagueDashboard({
                 <button
                   onClick={() => setTradePage((p) => Math.min(totalTradePages - 1, p + 1))}
                   disabled={tradePage === totalTradePages - 1}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors py-2.5 px-1 -my-2.5"
                 >
                   Next <ChevronRight size={14} />
                 </button>
@@ -546,7 +546,7 @@ export default function LeagueDashboard({
           <Card className="p-5">
             <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
             <div className="overflow-x-auto">
-              <table className="border-separate border-spacing-1 w-full table-fixed">
+              <table className="border-separate border-spacing-1 w-full table-fixed" style={{ minWidth: 720 }}>
                 <colgroup>
                   <col style={{ width: "34px" }} />
                   {draftBoard.slots.map((slot) => (
@@ -736,7 +736,7 @@ export default function LeagueDashboard({
               </div>
               <button
                 onClick={() => setRosterModalPos(null)}
-                className="text-slate-500 hover:text-slate-200 transition-colors"
+                className="text-slate-500 hover:text-slate-200 transition-colors p-2.5 -m-2.5"
                 aria-label="Close"
               >
                 <X size={16} />

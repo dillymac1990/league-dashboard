@@ -41,7 +41,7 @@ export default function PlayerCard({ playerId, playerIndex, onClose }) {
         <div className="flex justify-end mb-1">
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-200 transition-colors"
+            className="text-slate-500 hover:text-slate-200 transition-colors p-2.5 -m-2.5"
             aria-label="Close"
           >
             <X size={16} />

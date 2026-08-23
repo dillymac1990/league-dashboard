@@ -92,7 +92,7 @@ function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemov
               <span className="font-mono text-slate-400">{fmtValue(p.value)}</span>
               <button
                 onClick={() => onRemove(p.id)}
-                className="text-slate-500 hover:text-rose-400 transition-colors"
+                className="text-slate-500 hover:text-rose-400 transition-colors p-2 -m-2"
                 aria-label={`Remove ${p.name}`}
               >
                 <X size={12} />
