@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine, PieChart, Pie, Legend, LabelList
 } from "recharts";
-import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, CalendarDays } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, CalendarDays, X } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
 
 const TABS = [
@@ -102,6 +102,7 @@ export default function LeagueDashboard({
 }) {
   const [activeTab, setActiveTab] = useState("season");
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
+  const [rosterModalPos, setRosterModalPos] = useState(null);
   const [tradePage, setTradePage] = useState(0);
 
   const teamName = (id) => teams.find((t) => t.id === id)?.name ?? "Unknown";
@@ -300,6 +301,9 @@ export default function LeagueDashboard({
                       innerRadius={45}
                       outerRadius={80}
                       paddingAngle={2}
+                      onClick={(entry) => entry.value > 0 && setRosterModalPos(entry.name)}
+                      cursor="pointer"
+                      isAnimationActive={false}
                     >
                       {compositionData.map((entry) => (
                         <Cell key={entry.name} fill={POS_COLOR[entry.name]} stroke="#0f172a" strokeWidth={2} />
@@ -704,6 +708,42 @@ export default function LeagueDashboard({
           Live data via Sleeper &nbsp;·&nbsp; {season} season
         </div>
       </div>
+
+      {rosterModalPos && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={() => setRosterModalPos(null)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700 rounded-lg p-5 w-full max-w-sm max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm" style={{ background: POS_COLOR[rosterModalPos] }} />
+                <h3 className="text-sm font-bold text-slate-100">{team.name} — {rosterModalPos}</h3>
+              </div>
+              <button
+                onClick={() => setRosterModalPos(null)}
+                className="text-slate-500 hover:text-slate-200 transition-colors"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {(team.roster[rosterModalPos] ?? []).map((p) => (
+                <div key={p.id} className="text-xs text-slate-300 bg-slate-800/60 rounded px-2 py-1.5">
+                  {p.name}
+                </div>
+              ))}
+              {(team.roster[rosterModalPos] ?? []).length === 0 && (
+                <div className="text-xs text-slate-500">No players at this position.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
