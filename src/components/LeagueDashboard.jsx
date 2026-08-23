@@ -542,7 +542,80 @@ export default function LeagueDashboard({
         <>
         {draftPicks && draftPicks.length > 0 ? (
         <>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <Card className="p-5">
+            <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
+            <div className="overflow-x-auto">
+              <table className="border-separate border-spacing-1 w-full table-fixed">
+                <colgroup>
+                  <col style={{ width: "34px" }} />
+                  {draftBoard.slots.map((slot) => (
+                    <col key={slot} />
+                  ))}
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="bg-slate-800 text-[10px] text-slate-500 font-mono font-normal px-1.5 py-1.5 text-left">
+                      Rd
+                    </th>
+                    {draftBoard.slots.map((slot) => (
+                      <th
+                        key={slot}
+                        title={draftBoard.slotHeader[slot]?.teamName}
+                        className="bg-slate-800 text-[10px] text-slate-300 font-semibold px-1.5 py-1.5 text-left truncate"
+                      >
+                        {draftBoard.slotHeader[slot]?.owner}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {draftBoard.rounds.map((round) => (
+                    <tr key={round}>
+                      <td className="bg-slate-800 text-[10px] font-mono text-amber-400 px-1.5 py-1.5">
+                        {round}
+                      </td>
+                      {draftBoard.slots.map((slot) => {
+                        const p = draftBoard.cell[`${round}-${slot}`];
+                        if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
+                        const bg = POS_COLOR[p.pos] || "#94a3b8";
+                        return (
+                          <td
+                            key={slot}
+                            title={`Pick ${p.pickNo} · ${p.player} (${p.pos}) · ${p.seasonPts} pts · ${p.value > 0 ? "+" : ""}${p.value} value`}
+                            className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
+                            style={{ background: bg }}
+                          >
+                            <button
+                              onClick={() => p.playerId && setPlayerCardId(p.playerId)}
+                              className="text-black font-semibold truncate block w-full text-left hover:underline"
+                            >
+                              {p.player}
+                            </button>
+                            <div className="text-black/70 font-mono truncate">{p.pos} · {p.pickNo}</div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3">
+              {Object.entries(POS_COLOR).filter(([pos]) => pos !== "FLEX").map(([pos, color]) => (
+                <div key={pos} className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
+                  <span className="text-[10px] text-slate-500">{pos}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-500 mt-2">
+              Columns are draft slots (fixed per manager for the whole snake draft).
+            </p>
+          </Card>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="p-5">
             <SectionLabel eyebrow="Value Over Finish" title="Draft Value by Team" />
             <ResponsiveContainer width="100%" height={280}>
@@ -616,79 +689,6 @@ export default function LeagueDashboard({
                 </div>
               ))}
             </div>
-          </Card>
-        </div>
-
-        <div className="mt-6">
-          <Card className="p-5">
-            <SectionLabel eyebrow="Pick By Pick" title="Draft Board" />
-            <div className="overflow-x-auto">
-              <table className="border-separate border-spacing-1 w-full table-fixed">
-                <colgroup>
-                  <col style={{ width: "34px" }} />
-                  {draftBoard.slots.map((slot) => (
-                    <col key={slot} />
-                  ))}
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th className="bg-slate-800 text-[10px] text-slate-500 font-mono font-normal px-1.5 py-1.5 text-left">
-                      Rd
-                    </th>
-                    {draftBoard.slots.map((slot) => (
-                      <th
-                        key={slot}
-                        title={draftBoard.slotHeader[slot]?.teamName}
-                        className="bg-slate-800 text-[10px] text-slate-300 font-semibold px-1.5 py-1.5 text-left truncate"
-                      >
-                        {draftBoard.slotHeader[slot]?.owner}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {draftBoard.rounds.map((round) => (
-                    <tr key={round}>
-                      <td className="bg-slate-800 text-[10px] font-mono text-amber-400 px-1.5 py-1.5">
-                        {round}
-                      </td>
-                      {draftBoard.slots.map((slot) => {
-                        const p = draftBoard.cell[`${round}-${slot}`];
-                        if (!p) return <td key={slot} className="bg-slate-900/40 rounded" />;
-                        const bg = POS_COLOR[p.pos] || "#94a3b8";
-                        return (
-                          <td
-                            key={slot}
-                            title={`Pick ${p.pickNo} · ${p.player} (${p.pos}) · ${p.seasonPts} pts · ${p.value > 0 ? "+" : ""}${p.value} value`}
-                            className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
-                            style={{ background: bg }}
-                          >
-                            <button
-                              onClick={() => p.playerId && setPlayerCardId(p.playerId)}
-                              className="text-black font-semibold truncate block w-full text-left hover:underline"
-                            >
-                              {p.player}
-                            </button>
-                            <div className="text-black/70 font-mono truncate">{p.pos} · {p.pickNo}</div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3">
-              {Object.entries(POS_COLOR).filter(([pos]) => pos !== "FLEX").map(([pos, color]) => (
-                <div key={pos} className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
-                  <span className="text-[10px] text-slate-500">{pos}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Columns are draft slots (fixed per manager for the whole snake draft).
-            </p>
           </Card>
         </div>
         </>
