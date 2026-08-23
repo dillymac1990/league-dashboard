@@ -2,20 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { Scale, X, RotateCcw, Send } from "lucide-react";
+import PlayerCard from "./PlayerCard";
 
 function fmtValue(v) {
   return v == null ? "unranked" : v.toLocaleString();
 }
 
-// playerValues is { [sleeperPlayerId]: number }, fetched server-side from
-// FantasyCalc and keyed by Sleeper ID — see src/lib/fantasycalc.js. Players
-// FantasyCalc doesn't value at all (DEF, unranked rookies) show as
-// "unranked" and count as 0 toward a side's total.
-function rosterToPlayerList(team, playerValues) {
+// playerIndex is { [sleeperPlayerId]: {name, pos, team, value, ...} },
+// built server-side (Sleeper metadata + season points + FantasyCalc trade
+// value) — see src/lib/sleeper.js. Players FantasyCalc doesn't value at all
+// (DEF, unranked rookies) show as "unranked" and count as 0 toward a side's total.
+function rosterToPlayerList(team, playerIndex) {
   if (!team) return [];
   return Object.entries(team.roster)
     .flatMap(([pos, players]) =>
-      players.map((p) => ({ id: p.id, name: p.name, pos, value: playerValues[p.id] ?? null }))
+      players.map((p) => ({ id: p.id, name: p.name, pos, value: playerIndex[p.id]?.value ?? null }))
     )
     .sort((a, b) => (b.value ?? -1) - (a.value ?? -1));
 }
@@ -40,7 +41,7 @@ function verdictFor(totalA, totalB, nameA, nameB) {
   return { label: `Lopsided — ${winner} Wins Big`, style: "bg-rose-400/15 text-rose-300 border-rose-400/50" };
 }
 
-function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemove, options }) {
+function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemove, options, onPlayerClick }) {
   const total = players.reduce((s, p) => s + (p.value ?? 0), 0);
 
   return (
@@ -84,9 +85,9 @@ function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemov
             key={p.id}
             className="flex items-center justify-between text-[11px] text-slate-300 bg-slate-800/60 rounded px-2 py-1"
           >
-            <span className="truncate">
+            <button onClick={() => onPlayerClick(p.id)} className="truncate text-left hover:underline">
               {p.name} <span className="text-slate-500">({p.pos})</span>
-            </span>
+            </button>
             <div className="flex items-center gap-2 shrink-0">
               <span className="font-mono text-slate-400">{fmtValue(p.value)}</span>
               <button
@@ -104,18 +105,19 @@ function TradeSide({ label, teams, teamId, onTeamChange, players, onAdd, onRemov
   );
 }
 
-export default function TradeAnalyzer({ teams, playerValues }) {
+export default function TradeAnalyzer({ teams, playerIndex }) {
   const [teamAId, setTeamAId] = useState(null);
   const [teamBId, setTeamBId] = useState(null);
   const [sideAIds, setSideAIds] = useState([]);
   const [sideBIds, setSideBIds] = useState([]);
   const [postState, setPostState] = useState("idle"); // idle | posting | success | error
+  const [playerCardId, setPlayerCardId] = useState(null);
 
   const teamA = teams.find((t) => t.id === teamAId);
   const teamB = teams.find((t) => t.id === teamBId);
 
-  const rosterA = useMemo(() => rosterToPlayerList(teamA, playerValues), [teamA, playerValues]);
-  const rosterB = useMemo(() => rosterToPlayerList(teamB, playerValues), [teamB, playerValues]);
+  const rosterA = useMemo(() => rosterToPlayerList(teamA, playerIndex), [teamA, playerIndex]);
+  const rosterB = useMemo(() => rosterToPlayerList(teamB, playerIndex), [teamB, playerIndex]);
 
   const byIdA = new Map(rosterA.map((p) => [p.id, p]));
   const byIdB = new Map(rosterB.map((p) => [p.id, p]));
@@ -194,6 +196,7 @@ export default function TradeAnalyzer({ teams, playerValues }) {
           options={rosterA.filter((p) => !sideAIds.includes(p.id))}
           onAdd={(id) => setSideAIds((s) => [...s, id])}
           onRemove={(id) => setSideAIds((s) => s.filter((n) => n !== id))}
+          onPlayerClick={setPlayerCardId}
         />
         <TradeSide
           label="Side B"
@@ -204,6 +207,7 @@ export default function TradeAnalyzer({ teams, playerValues }) {
           options={rosterB.filter((p) => !sideBIds.includes(p.id))}
           onAdd={(id) => setSideBIds((s) => [...s, id])}
           onRemove={(id) => setSideBIds((s) => s.filter((n) => n !== id))}
+          onPlayerClick={setPlayerCardId}
         />
       </div>
 
@@ -231,6 +235,8 @@ export default function TradeAnalyzer({ teams, playerValues }) {
       <p className="text-[11px] text-slate-500 mt-2">
         Values are live market trade values from FantasyCalc, matched to your league&apos;s actual scoring and team count. Defenses aren&apos;t valued by FantasyCalc and show as &quot;unranked&quot; (counted as 0).
       </p>
+
+      <PlayerCard playerId={playerCardId} playerIndex={playerIndex} onClose={() => setPlayerCardId(null)} />
     </div>
   );
 }

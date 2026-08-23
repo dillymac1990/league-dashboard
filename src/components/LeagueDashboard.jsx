@@ -7,6 +7,8 @@ import {
 } from "recharts";
 import { Trophy, TrendingUp, TrendingDown, Users, Shield, ArrowLeftRight, ChevronLeft, ChevronRight, Hammer, CalendarDays, X } from "lucide-react";
 import TradeAnalyzer from "./TradeAnalyzer";
+import PlayerCard from "./PlayerCard";
+import { POS_COLOR } from "@/lib/posColors";
 
 const TABS = [
   { id: "season", label: "In-Season" },
@@ -14,22 +16,6 @@ const TABS = [
   { id: "trades", label: "Trade Lab" },
   { id: "draft", label: "Draft Stats" },
 ];
-
-// Shared position palette (Sleeper-style, sampled from a real Sleeper draft
-// board screenshot) — used by the Draft Board grid, Team Composition pie,
-// and Points by Position chart alike. K wasn't visible in the sample this
-// league doesn't roster one, so that value is a guess. FLEX has no Sleeper
-// equivalent (it's a lineup slot, not a real position), so it keeps a
-// neutral gray.
-const POS_COLOR = {
-  QB: "#B8507C",
-  RB: "#4FAE7F",
-  WR: "#4A85C4",
-  TE: "#C98A45",
-  K: "#B48EE0",
-  DEF: "#A8706B",
-  FLEX: "#8892A6",
-};
 
 // Red (worst) -> yellow (median) -> green (best) gradient, keyed to a team's
 // rank among bench-points-left rather than the raw value, so the colors
@@ -69,6 +55,17 @@ function GradeBadge({ grade }) {
   );
 }
 
+// Renders one line item of a trade — a clickable player name (opens a
+// player card) or plain text for a draft pick / FAAB.
+function TradeItem({ item, onPlayerClick }) {
+  if (item.type !== "player") return <span>{item.label}</span>;
+  return (
+    <button onClick={() => onPlayerClick(item.id)} className="hover:underline">
+      {item.name} ({item.pos})
+    </button>
+  );
+}
+
 function Card({ children, className = "" }) {
   return (
     <div className={`rounded-lg border border-slate-700/60 bg-slate-800/40 ${className}`}>
@@ -98,11 +95,12 @@ export default function LeagueDashboard({
   trades,
   draftPicks,
   draftValueByTeam,
-  playerValues,
+  playerIndex,
 }) {
   const [activeTab, setActiveTab] = useState("season");
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
   const [rosterModalPos, setRosterModalPos] = useState(null);
+  const [playerCardId, setPlayerCardId] = useState(null);
   const [tradePage, setTradePage] = useState(0);
 
   const teamName = (id) => teams.find((t) => t.id === id)?.name ?? "Unknown";
@@ -454,7 +452,7 @@ export default function LeagueDashboard({
         {/* Trade Analyzer */}
         <div>
           <Card className="p-5">
-            <TradeAnalyzer teams={teams} playerValues={playerValues} />
+            <TradeAnalyzer teams={teams} playerIndex={playerIndex} />
           </Card>
         </div>
 
@@ -481,13 +479,13 @@ export default function LeagueDashboard({
                         <GradeBadge grade={tr.gradeA} />
                       </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
-                        {tr.receiveA.map((p) => (
-                          <div key={p}>+ {p}</div>
+                        {tr.receiveA.map((item, i) => (
+                          <div key={i}>+ <TradeItem item={item} onPlayerClick={setPlayerCardId} /></div>
                         ))}
                       </div>
                       <div className="text-[11px] text-rose-400">
-                        {tr.sendA.map((p) => (
-                          <div key={p}>− {p}</div>
+                        {tr.sendA.map((item, i) => (
+                          <div key={i}>− <TradeItem item={item} onPlayerClick={setPlayerCardId} /></div>
                         ))}
                       </div>
                     </div>
@@ -497,13 +495,13 @@ export default function LeagueDashboard({
                         <GradeBadge grade={tr.gradeB} />
                       </div>
                       <div className="text-[11px] text-emerald-400 mb-0.5">
-                        {tr.receiveB.map((p) => (
-                          <div key={p}>+ {p}</div>
+                        {tr.receiveB.map((item, i) => (
+                          <div key={i}>+ <TradeItem item={item} onPlayerClick={setPlayerCardId} /></div>
                         ))}
                       </div>
                       <div className="text-[11px] text-rose-400">
-                        {tr.sendB.map((p) => (
-                          <div key={p}>− {p}</div>
+                        {tr.sendB.map((item, i) => (
+                          <div key={i}>− <TradeItem item={item} onPlayerClick={setPlayerCardId} /></div>
                         ))}
                       </div>
                     </div>
@@ -585,7 +583,11 @@ export default function LeagueDashboard({
               {topSteals.map((p) => (
                 <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
                   <span className="text-slate-300 truncate">
-                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
+                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")}{" "}
+                    <button onClick={() => p.playerId && setPlayerCardId(p.playerId)} className="hover:underline hover:text-amber-300">
+                      {p.player}
+                    </button>{" "}
+                    <span className="text-slate-500">({p.pos})</span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0 ml-2">
                     <span className="text-slate-500 truncate max-w-[90px]">{p.owner}</span>
@@ -601,7 +603,11 @@ export default function LeagueDashboard({
               {topReaches.map((p) => (
                 <div key={p.pickNo} className="flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1.5">
                   <span className="text-slate-300 truncate">
-                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")} {p.player} <span className="text-slate-500">({p.pos})</span>
+                    R{p.round}.{String(((p.pickNo - 1) % numTeams) + 1).padStart(2, "0")}{" "}
+                    <button onClick={() => p.playerId && setPlayerCardId(p.playerId)} className="hover:underline hover:text-amber-300">
+                      {p.player}
+                    </button>{" "}
+                    <span className="text-slate-500">({p.pos})</span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0 ml-2">
                     <span className="text-slate-500 truncate max-w-[90px]">{p.owner}</span>
@@ -657,7 +663,12 @@ export default function LeagueDashboard({
                             className="text-[10px] px-1.5 py-1.5 rounded overflow-hidden"
                             style={{ background: bg }}
                           >
-                            <div className="text-black font-semibold truncate">{p.player}</div>
+                            <button
+                              onClick={() => p.playerId && setPlayerCardId(p.playerId)}
+                              className="text-black font-semibold truncate block w-full text-left hover:underline"
+                            >
+                              {p.player}
+                            </button>
                             <div className="text-black/70 font-mono truncate">{p.pos} · {p.pickNo}</div>
                           </td>
                         );
@@ -733,9 +744,13 @@ export default function LeagueDashboard({
             </div>
             <div className="space-y-1">
               {(team.roster[rosterModalPos] ?? []).map((p) => (
-                <div key={p.id} className="text-xs text-slate-300 bg-slate-800/60 rounded px-2 py-1.5">
+                <button
+                  key={p.id}
+                  onClick={() => setPlayerCardId(p.id)}
+                  className="w-full text-left text-xs text-slate-300 hover:text-amber-300 bg-slate-800/60 hover:bg-slate-800 rounded px-2 py-1.5 transition-colors"
+                >
                   {p.name}
-                </div>
+                </button>
               ))}
               {(team.roster[rosterModalPos] ?? []).length === 0 && (
                 <div className="text-xs text-slate-500">No players at this position.</div>
@@ -744,6 +759,8 @@ export default function LeagueDashboard({
           </div>
         </div>
       )}
+
+      <PlayerCard playerId={playerCardId} playerIndex={playerIndex} onClose={() => setPlayerCardId(null)} />
     </div>
   );
 }

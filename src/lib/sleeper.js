@@ -32,6 +32,10 @@ const getSlimPlayers = unstable_cache(
       slim[id] = {
         name: p.full_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || id,
         position: p.position || p.fantasy_positions?.[0] || null,
+        team: p.team || null,
+        injuryStatus: p.injury_status || null,
+        age: p.age ?? null,
+        number: p.number ?? null,
       };
     }
     return slim;
@@ -44,13 +48,19 @@ function playerName(players, pid) {
   return players[pid]?.name || pid;
 }
 
-function playerLabel(players, pid) {
-  const pos = players[pid]?.position ?? "?";
-  return `${playerName(players, pid)} (${pos})`;
+// Structured trade-line items (as opposed to a pre-joined display string) so
+// the UI can make player names clickable (open a player card) while picks
+// and FAAB stay plain text.
+function playerItem(players, pid) {
+  return { type: "player", id: pid, name: playerName(players, pid), pos: players[pid]?.position ?? "?" };
 }
 
-function pickLabel(pick) {
-  return `${pick.season} Round ${pick.round}`;
+function pickItem(pick) {
+  return { type: "pick", label: `${pick.season} Round ${pick.round}` };
+}
+
+function faabItem(amount) {
+  return { type: "faab", label: `$${amount} FAAB` };
 }
 
 export async function getLeagueData() {
@@ -169,12 +179,12 @@ export async function getLeagueData() {
       const [rA, rB] = t.roster_ids;
       if (rA == null || rB == null) continue; // skip trades that aren't simple 2-team swaps
 
-      const playersToA = Object.entries(t.adds || {}).filter(([, r]) => r === rA).map(([pid]) => playerLabel(players, pid));
-      const playersToB = Object.entries(t.adds || {}).filter(([, r]) => r === rB).map(([pid]) => playerLabel(players, pid));
-      const picksToA = (t.draft_picks || []).filter((p) => p.owner_id === rA).map(pickLabel);
-      const picksToB = (t.draft_picks || []).filter((p) => p.owner_id === rB).map(pickLabel);
-      const faabToA = (t.waiver_budget || []).filter((f) => f.receiver === rA).map((f) => `$${f.amount} FAAB`);
-      const faabToB = (t.waiver_budget || []).filter((f) => f.receiver === rB).map((f) => `$${f.amount} FAAB`);
+      const playersToA = Object.entries(t.adds || {}).filter(([, r]) => r === rA).map(([pid]) => playerItem(players, pid));
+      const playersToB = Object.entries(t.adds || {}).filter(([, r]) => r === rB).map(([pid]) => playerItem(players, pid));
+      const picksToA = (t.draft_picks || []).filter((p) => p.owner_id === rA).map(pickItem);
+      const picksToB = (t.draft_picks || []).filter((p) => p.owner_id === rB).map(pickItem);
+      const faabToA = (t.waiver_budget || []).filter((f) => f.receiver === rA).map((f) => faabItem(f.amount));
+      const faabToB = (t.waiver_budget || []).filter((f) => f.receiver === rB).map((f) => faabItem(f.amount));
       const { gradeA, gradeB } = getTradeGrades(t.transaction_id);
 
       trades.push({
@@ -214,6 +224,7 @@ export async function getLeagueData() {
           pickNo: p.pick_no,
           round: p.round,
           slot: p.draft_slot,
+          playerId: p.player_id,
           teamId: p.roster_id,
           teamName: rosterIdToOwner[p.roster_id]?.teamName ?? `Team ${p.roster_id}`,
           owner: rosterIdToOwner[p.roster_id]?.owner ?? "Unknown",
@@ -243,6 +254,29 @@ export async function getLeagueData() {
     ppr: league.scoring_settings.rec ?? 1,
   });
 
+  // --- Player card data, for every player who shows up anywhere in the
+  // app (roster, draft board, or a trade) — not the full ~12k player file. ---
+  const playerIds = new Set();
+  for (const t of teams) {
+    for (const pos in t.roster) for (const p of t.roster[pos]) playerIds.add(p.id);
+  }
+  for (const p of draftPicks) if (p.playerId) playerIds.add(p.playerId);
+  for (const t of trades) {
+    for (const item of [...t.receiveA, ...t.sendA]) if (item.type === "player") playerIds.add(item.id);
+  }
+
+  const playerIndex = {};
+  for (const id of playerIds) {
+    playerIndex[id] = {
+      name: players[id]?.name || id,
+      pos: players[id]?.position || null,
+      team: players[id]?.team || null,
+      injuryStatus: players[id]?.injuryStatus || null,
+      seasonPts: Number((seasonPtsByPlayerId[id] || 0).toFixed(1)),
+      value: playerValues[id] ?? null,
+    };
+  }
+
   return {
     leagueName: league.name,
     season: league.season,
@@ -255,6 +289,6 @@ export async function getLeagueData() {
     trades,
     draftPicks,
     draftValueByTeam,
-    playerValues,
+    playerIndex,
   };
 }
